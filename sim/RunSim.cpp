@@ -112,6 +112,7 @@ void doTimeStep(FoxPopulation &p, int infectiousPeriod, int latentPeriod, Simula
     sim.updateDiseaseSummary(data);
     //Change current states to future states
     for (int i = 0; i < (*p.getAll()).size(); i++) {
+        (*p.getAll())[i].updateState();
     }
  
 }

@@ -1,5 +1,6 @@
 #include "FoxPopulation.h"
 #include <algorithm>
+#include "test.h"
 namespace foxlib {
 
 //Generates initial, fully susceptible fox population of foxes from passed parameters
@@ -7,14 +8,15 @@ FoxPopulation::FoxPopulation(int N, int islandWidth, int islandHeight, bool bugs
     population.resize(N);
     int realN = 0; //Based on random method, N varies, so we have to count it.
     std::vector<OrigFox>* popPtr = &population;
-    int resampleCount = 0; //How many times have placed the fox unsuccessfully?
-    int resampleCountMemory = 0; //Code iterates resample count by adding the bool return value of placeFoxOnMap to it. If it doesn't change, loop ends.
     for (int i = 0; i < N; i++) {
+        int resampleCount = 0; //How many times have placed the fox unsuccessfully?
+        int resampleCountMemory = -1; //Code iterates resample count by adding the bool return value of placeFoxOnMap to it. If it doesn't change, loop ends.
         while (resampleCount < 400 && resampleCount != resampleCountMemory) {
             resampleCountMemory = resampleCount;
-            resampleCount += population[i].placeFoxOnMap(N, popPtr, islandWidth, islandHeight, bugs);
+            resampleCount += population[i].placeFoxOnMap(i, popPtr, islandWidth, islandHeight, bugs);
         }
         if (resampleCount != resampleCountMemory) {
+            realN = i;
             break;
         }
         realN = i + 1;

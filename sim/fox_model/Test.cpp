@@ -29,6 +29,14 @@ void testPlaceFoxOnMap(std::vector<OrigFox>* arr, int n, bool isWrong) {
 	//showIsland(100, 100, arr, numFox);
 }
 
+void printFoxes(int numFox, std::vector<OrigFox>* arr) {
+    std::cout << numFox << '\n';
+    for (int i = 0; i < numFox; i++) {
+        int pos[2];
+        (*arr)[i].getPos(pos);
+        std::cout << pos[0] << " " << pos[1] << " " << (*arr)[i].getHabitat() << " " << (*arr)[i].getRadius() << " " << i << '\n';
+    }
+}
 void showIsland(int xSize, int ySize, std::vector<OrigFox>* pop, int n) { //I know I could write this better lol but it's a test
 	int pos[2];
 	for (int i = 0; i < xSize; i++) {

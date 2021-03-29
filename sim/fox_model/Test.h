@@ -6,6 +6,7 @@
 #include <vector>
 using namespace foxlib;
 
+void printFoxes(int numFox, std::vector<OrigFox>* arr);
 void testPlaceFoxOnMap(std::vector<OrigFox>* arr, int n, bool isWrong);
 void showIsland(int xSize, int ySize, std::vector<OrigFox>* pop, int n);
 void tryStuff();
