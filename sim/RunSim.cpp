@@ -147,7 +147,7 @@ int main() {
         std::vector<SimulationData>* results = &simData;
 
         for (int i = 0; i < (numSims / resampleFreq + 1); i++) { //divide by 0 issue so fix that
-            if (i == numSims / resampleFreq) {
+            if (i == numSims / resampleFreq && numSims % resampleFreq != 0) {
                 resampleFreq = numSims % resampleFreq;
             }
             pop = FoxPopulation(N, islandWidth, islandHeight, origMethods);
