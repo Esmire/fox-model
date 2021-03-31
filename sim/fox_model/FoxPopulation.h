@@ -22,6 +22,7 @@ public:
     std::vector<Fox*>* getDead() { return &removeds; }
     std::vector<Fox*>* getRecovereds() { return &recovereds; }
     std::vector<OrigFox>* getAll() { return &population; }
+    int getPopSizeGenerated() { return popSizeGenerated; }
 
 private:
     bool initialized = false; //Whether it's a new population or whether it's already gone through a simulation
@@ -31,6 +32,7 @@ private:
     std::vector<Fox*> infecteds;
     std::vector<Fox*> recovereds;
     std::vector<Fox*> removeds;
+    int popSizeGenerated;
 };
 
 #endif

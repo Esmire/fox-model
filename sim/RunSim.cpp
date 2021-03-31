@@ -38,17 +38,17 @@ void setSeedFox(bool highDensity, int N, FoxPopulation &pop, SimulationData &sim
         (*foxPop)[i].getPos(posArr);
         yVal = posArr[1];
         if (yVal > maxPos) {
-            maxPos = posArr[1];
+            maxPos = yVal;
             maxIndex = i;
         }else if(yVal == maxPos) {
             maxIndex = randomlyPick(i, minIndex); /*This is going to make same y foxes at the end more likely. I'll fix it later, but ok for a rough draft since
                                                   island height > island width > numFoxes & overlap is constrained*/
         }else if (yVal < minPos) {
-            minPos = posArr[1];
+            minPos = yVal;
                 minIndex = i;
-        }else if (posArr[1] == minPos) {
+        }else if (yVal == minPos) {
             minIndex = randomlyPick(i, minIndex);
-            }
+        }
     }
     if (highDensity) {
         (*foxPop)[maxIndex].setNextDiseaseState(Fox::kDiseaseState::latent);
@@ -125,6 +125,7 @@ void runSimGroup(int N, int latentPeriod, int infectiousPeriod, FoxPopulation &p
         }
         (*result).push_back(state);
         state.printStuff();
+        std::cout << "end of sim " << i;
     }
 }
 
@@ -132,13 +133,13 @@ void runSimGroup(int N, int latentPeriod, int infectiousPeriod, FoxPopulation &p
 int main() {
     //tryStuff();
  //SET THE FOLLOWING
-    int N = 20;
-    int numSims = 1;
+    int N = 1000;
+    int numSims = 2;
     int numTimeSteps = 365;
     int resampleFreq = 10;
-    int islandWidth = 1000;
-    int islandHeight = 1000; //i think the units are meters but honestly i dont know anymore i forgot
-    bool origMethods = true;
+    int islandWidth = 5000;
+    int islandHeight = 30000; //i think the units are meters but honestly i dont know anymore i forgot
+    bool origMethods = false;
     int latentPeriod = 5;
     int infectiousPeriod = 21;
     try {
@@ -151,8 +152,10 @@ int main() {
                 simGroupSize = numSims % resampleFreq;
             }
             FoxPopulation pop(N, islandWidth, islandHeight, origMethods);
+            N = pop.getPopSizeGenerated();
+            std::cout << "generation complete";
             SimulationData init(i, N, numTimeSteps); //fix this the i thing is wrong
-            PopulationData* popdata = new PopulationData(pop.getAll(), i, i + simGroupSize);
+            PopulationData* popdata = new PopulationData(pop.getAll(), i, i + simGroupSize - 1);
             init.updatePopSummary((*popdata));
             runSimGroup(N, latentPeriod, infectiousPeriod, pop, init, results, numTimeSteps, simGroupSize);
         }

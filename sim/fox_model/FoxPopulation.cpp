@@ -21,6 +21,7 @@ FoxPopulation::FoxPopulation(int N, int islandWidth, int islandHeight, bool bugs
         }
         realN = i + 1;
     }
+    popSizeGenerated = realN;
     printFoxes(realN, popPtr);
     population.resize(realN);
     setUpSusceptibles();
