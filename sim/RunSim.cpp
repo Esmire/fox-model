@@ -51,12 +51,12 @@ void setSeedFox(bool highDensity, int N, FoxPopulation &pop, SimulationData &sim
             }
     }
     if (highDensity) {
-        pop.changeFoxCompartment(Fox::kDiseaseState::latent, maxIndex);
         (*foxPop)[maxIndex].setNextDiseaseState(Fox::kDiseaseState::latent);
+        pop.changeFoxCompartment(maxIndex);
         sim.storeSeedFox((*foxPop)[maxIndex]);
     } else {
-        pop.changeFoxCompartment(Fox::kDiseaseState::latent, minIndex);
         (*foxPop)[minIndex].setNextDiseaseState(Fox::kDiseaseState::latent);
+        pop.changeFoxCompartment(minIndex);
         sim.storeSeedFox((*foxPop)[minIndex]);
     }
 }
@@ -112,11 +112,10 @@ void doTimeStep(FoxPopulation &p, int infectiousPeriod, int latentPeriod, Simula
     sim.updateDiseaseSummary(data);
     //Change current states to future states
     for (int i = 0; i < (*p.getAll()).size(); i++) {
-        (*p.getAll())[i].updateState();
+        //(*p.getAll())[i].updateState();
+        p.changeFoxCompartment(i);
     }
- 
 }
-
 //Runs 1 sim and returns the data for it
 void runSimGroup(int N, int latentPeriod, int infectiousPeriod, FoxPopulation &p, SimulationData state, std::vector<SimulationData>* result, int time, int groupSize) {
     for (int i = 0; i < groupSize; i++) {
@@ -133,29 +132,29 @@ void runSimGroup(int N, int latentPeriod, int infectiousPeriod, FoxPopulation &p
 int main() {
     //tryStuff();
  //SET THE FOLLOWING
-    int N = 2000;
+    int N = 20;
     int numSims = 1;
     int numTimeSteps = 365;
     int resampleFreq = 10;
-    int islandWidth = 5000;
-    int islandHeight = 30000; //i think the units are meters but honestly i dont know anymore i forgot
+    int islandWidth = 1000;
+    int islandHeight = 1000; //i think the units are meters but honestly i dont know anymore i forgot
     bool origMethods = true;
     int latentPeriod = 5;
     int infectiousPeriod = 21;
     try {
-        FoxPopulation pop(N, islandWidth, islandHeight, origMethods);
         std::vector<SimulationData> simData;
         std::vector<SimulationData>* results = &simData;
 
-        for (int i = 0; i < (numSims / resampleFreq + 1); i++) { //divide by 0 issue so fix that
+        int simGroupSize = resampleFreq;
+        for (int i = 0; i < (numSims / resampleFreq) + 1; i++) { //divide by 0 issue so fix that
             if (i == numSims / resampleFreq && numSims % resampleFreq != 0) {
-                resampleFreq = numSims % resampleFreq;
+                simGroupSize = numSims % resampleFreq;
             }
-            pop = FoxPopulation(N, islandWidth, islandHeight, origMethods);
+            FoxPopulation pop(N, islandWidth, islandHeight, origMethods);
             SimulationData init(i, N, numTimeSteps); //fix this the i thing is wrong
-            PopulationData* popdata = new PopulationData(pop.getAll(), i, i + resampleFreq);
+            PopulationData* popdata = new PopulationData(pop.getAll(), i, i + simGroupSize);
             init.updatePopSummary((*popdata));
-            runSimGroup(N, latentPeriod, infectiousPeriod, pop, init, results, numTimeSteps, resampleFreq);
+            runSimGroup(N, latentPeriod, infectiousPeriod, pop, init, results, numTimeSteps, simGroupSize);
         }
     }
     catch (const char* msg) {

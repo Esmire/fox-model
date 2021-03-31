@@ -10,9 +10,10 @@ class FoxPopulation
 public:
    
     void reset();
-    void changeFoxCompartment(Fox::kDiseaseState endCompartment, int vectorPos);
+    void changeFoxCompartment(int vectorPos);
     FoxPopulation(int N, int width, int height, bool bugs);
     void setUpSusceptibles();
+    void removeFox(std::vector<Fox*> &compartment, Fox* ptr);
 
     //get the vectors of pointers so that later functions don't have to sort through the population
     std::vector<Fox*>* getLatents() { return &latents; }

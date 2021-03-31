@@ -21,6 +21,7 @@ FoxPopulation::FoxPopulation(int N, int islandWidth, int islandHeight, bool bugs
         }
         realN = i + 1;
     }
+    printFoxes(realN, popPtr);
     population.resize(realN);
     setUpSusceptibles();
 }
@@ -41,53 +42,73 @@ void FoxPopulation::reset(){
 }
 
 //Changes a fox's compartment, and then moves it from one vector to another
-void FoxPopulation::changeFoxCompartment(Fox::kDiseaseState endCompartment, int vectorPos) {
+void FoxPopulation::changeFoxCompartment(int vectorPos) {
     Fox* ptr = &population[vectorPos];
     Fox::kDiseaseState startCompartment = ptr->getDiseaseState();
+    Fox::kDiseaseState endCompartment = ptr->getNextDiseaseState();
     ptr->setDiseaseState(endCompartment);
     int passPos = vectorPos - 1; //Makes it so I can pass by adding to vector.begin(), which I have to do since vector.erase() takes an iterator instead of an int
+    if (startCompartment != endCompartment) {
+        switch (startCompartment) {
+        case Fox::susceptible:
+            //susceptibles.erase(std::remove_if(susceptibles.begin(), susceptibles.end(), [](Fox* i) { return ((*i).getDiseaseState != Fox::susceptible); }));
+            //susceptibles.erase(std::remove(susceptibles.begin(), susceptibles.end(), ptr), susceptibles.end());
+            //susceptibles.erase(susceptibles.begin() + vectorPos);
+            removeFox(susceptibles, ptr);
+            break;
+        case Fox::latent:
+            //latents.erase(std::remove_if(latents.begin(), latents.end(), [](Fox* i) { return ((*i).getDiseaseState() != Fox::latent); }));
+            //latents.erase(latents.begin() + vectorPos);
+            //latents.erase(std::remove(latents.begin(), latents.end(), &(*ptr)), latents.end());
+            removeFox(latents, ptr);
+            break;
+        case Fox::infectious:
+            //infecteds.erase(std::remove_if(infecteds.begin(), infecteds.end(), [](Fox* i) { return ((*i).getDiseaseState != Fox::infectious); }));
+            //infecteds.erase(infecteds.begin() + passPos);
+            removeFox(infecteds, ptr);
+            break;
+        case Fox::recovered:
+            //recovereds.erase(std::remove_if(recovereds.begin(), recovereds.end(), [](Fox* i) { return ((*i).getDiseaseState != Fox::recovered); }));
+            //recovereds.erase(recovereds.begin() + passPos);
+            removeFox(recovereds, ptr);
+            break;
+        case Fox::dead:
+            //removeds.erase(std::remove_if(removeds.begin(), removeds.end(), [](Fox* i) { return ((*i).getDiseaseState != Fox::dead); }));
+            //removeds.erase(removeds.begin() + passPos);
+            removeFox(removeds, ptr);
+            break;
+        }
 
-    switch (startCompartment) {
-    case Fox::susceptible:
-        //susceptibles.erase(std::remove_if(susceptibles.begin(), susceptibles.end(), [](Fox* i) { return ((*i).getDiseaseState != Fox::susceptible); }));
-        susceptibles.erase(susceptibles.begin() + vectorPos);
-        break;
-    case Fox::latent:
-        //latents.erase(std::remove_if(latents.begin(), latents.end(), [](Fox* i) { return ((*i).getDiseaseState() != Fox::latent); }));
-        latents.erase(latents.begin() + vectorPos);
-        break;
-    case Fox::infectious:
-        //infecteds.erase(std::remove_if(infecteds.begin(), infecteds.end(), [](Fox* i) { return ((*i).getDiseaseState != Fox::infectious); }));
-        infecteds.erase(infecteds.begin() + passPos);
-        break;
-    case Fox::recovered:
-        //recovereds.erase(std::remove_if(recovereds.begin(), recovereds.end(), [](Fox* i) { return ((*i).getDiseaseState != Fox::recovered); }));
-        recovereds.erase(recovereds.begin() + passPos);
-        break;
-    case Fox::dead:
-        //removeds.erase(std::remove_if(removeds.begin(), removeds.end(), [](Fox* i) { return ((*i).getDiseaseState != Fox::dead); }));
-        removeds.erase(removeds.begin() + passPos);
-        break;
+        switch (endCompartment) {
+        case Fox::susceptible:
+            susceptibles.push_back(ptr);
+            break;
+        case Fox::latent:
+            latents.push_back(ptr);
+            break;
+        case Fox::infectious:
+            infecteds.push_back(ptr);
+            break;
+        case Fox::recovered:
+            recovereds.push_back(ptr);
+            break;
+        case Fox::dead:
+            removeds.push_back(ptr);
+            break;
+        }
     }
+}
 
-    switch (endCompartment) {
-    case Fox::susceptible:
-        susceptibles.push_back(ptr);
-        break;
-    case Fox::latent:
-        latents.push_back(ptr);
-        break;
-    case Fox::infectious:
-        infecteds.push_back(ptr);
-        break;
-    case Fox::recovered:
-        recovereds.push_back(ptr);
-        break;
-    case Fox::dead:
-        removeds.push_back(ptr);
-        break;
+void FoxPopulation::removeFox(std::vector<Fox*> &compartment, Fox* ptr) {
+    bool foundFox = false;
+    int i = 0;
+    while(!foundFox) {
+        if (compartment[i] == ptr) {
+            compartment.erase(compartment.begin() + i);
+            foundFox = true; 
+        }
+        i++;
     }
-    
 }
 
 //Sets all fox disease states to susceptible and adds them to the susceptible vector

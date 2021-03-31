@@ -17,10 +17,12 @@ void SimulationData::updateDiseaseSummary(DiseaseData stateAtTimestep) {
     diseaseMatrix.push_back(stateAtTimestep);
 }
 
+//Stores copy of the seed fox
 void SimulationData::storeSeedFox(Fox f) {
     seedFox = f;
 }
 
+//When the debugger fails...
 void SimulationData::printStuff() {
     for (int i = 0; i < timestepNumber; i++){
         std::cout << "sus: " << diseaseMatrix[i].numSusceptible << "lat: " << diseaseMatrix[i].numLatent << "inf: " << diseaseMatrix[i].numInfectious << "dead: " << diseaseMatrix[i].numDead << "\n";
