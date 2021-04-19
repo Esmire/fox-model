@@ -4,6 +4,7 @@
 #include <math.h>
 #include "Overlap.h"
 #include "NeighborInfo.h"
+#include <iostream>
 
 namespace foxlib {
 //Improvement note: later see if possible to include only random library instead of stdlib.h and random
@@ -26,17 +27,19 @@ bool OrigFox::placeFoxOnMap(int n, std::vector<OrigFox>* pop, int xSize, int ySi
         if (geoMean > 0.0 && geoMean < 0.75) {
             NeighborInfo* neighbor = new NeighborInfo(*this, (*pop)[i], overlap, geoMean); //Dynamically allocates memory so this object will keep existing
             addNeighbor((*neighbor)); //Create a neighbor info object for any neighboring foxes
+            //std::cout << geoMean;
         }
-        else if (geoMean > 0.75) {
+        if (geoMean > 0.75) {
             tooLarge = true;
             clearNeighbors(); //Gets rid of the neighbor objects if it didn't work
         }
         i++;
     }
     if (!tooLarge) {
+        informNeighborFoxes();
+        setNum(n);
         return false;
     }
-    informNeighborFoxes(); //Have other foxes in the pair point to the NeighborInfo object as well, now that we're sure they're valid.
     return true;
 }
 

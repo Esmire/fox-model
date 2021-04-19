@@ -35,6 +35,8 @@ public:
     kDiseaseState getDiseaseState() { return diseaseState; }
     kDiseaseState getNextDiseaseState() { return nextDiseaseState; }
     std::vector<NeighborInfo*>* getOverlappingNeighbors() { return &overlappingNeighbors; }
+    void setNum(int n) { num = n; }
+    int getNum() { return num; }
 
 private:
     int posX, posY;
@@ -43,6 +45,7 @@ private:
     kDiseaseState diseaseState = susceptible;
     kDiseaseState nextDiseaseState = susceptible;
     std::vector<NeighborInfo*> overlappingNeighbors;
+    int num;
 
 };
 

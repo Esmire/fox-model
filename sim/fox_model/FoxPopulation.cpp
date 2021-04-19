@@ -1,6 +1,9 @@
 #include "FoxPopulation.h"
 #include <algorithm>
 #include "test.h"
+#include "NeighborInfo.h"
+#include "OrigFox.h"
+#include <iostream>
 namespace foxlib {
 
 //Generates initial, fully susceptible fox population of foxes from passed parameters
@@ -11,7 +14,7 @@ FoxPopulation::FoxPopulation(int N, int islandWidth, int islandHeight, bool bugs
     for (int i = 0; i < N; i++) {
         int resampleCount = 0; //How many times have placed the fox unsuccessfully?
         int resampleCountMemory = -1; //Code iterates resample count by adding the bool return value of placeFoxOnMap to it. If it doesn't change, loop ends.
-        while (resampleCount < 400 && resampleCount != resampleCountMemory) {
+        while (resampleCount <= 400 && resampleCount != resampleCountMemory) {
             resampleCountMemory = resampleCount;
             resampleCount += population[i].placeFoxOnMap(i, popPtr, islandWidth, islandHeight, bugs);
         }
@@ -22,9 +25,29 @@ FoxPopulation::FoxPopulation(int N, int islandWidth, int islandHeight, bool bugs
         realN = i + 1;
     }
     popSizeGenerated = realN;
-    printFoxes(realN, popPtr);
+    //printFoxes(realN, popPtr);
     population.resize(realN);
+    //makeNeighbors(popPtr, bugs);
     setUpSusceptibles();
+}
+
+//NEED TO TEST THIS -- something's weird here. I suspect it's because overlap wrong isn't associative, so by calculating in a different order, we end up with larger overlap values.
+void FoxPopulation::makeNeighbors(std::vector<OrigFox>* pop, bool wrongFormula) {
+    int size = (*pop).size();
+    double overlap;
+    double geoMean = 0;
+    for (int i = 0; i < size; i++) {
+        for (int j = i + 1; j < size; j++) {
+            overlap = (*pop)[i].findOverlap((*pop)[j], wrongFormula);
+            geoMean = overlap / (3.14159 * (*pop)[i].getRadius() * (*pop)[j].getRadius());
+            if (geoMean > 0.0) {
+                //std::cout << " " << geoMean;
+                NeighborInfo* neighbor = new NeighborInfo((*pop)[i], (*pop)[j], overlap, geoMean); //Dynamically allocates memory so this object will keep existing
+                (*pop)[i].addNeighbor((*neighbor));
+                (*pop)[j].addNeighbor((*neighbor));
+            }
+        }
+    }
 }
 
 //Since same pop can be used for multiple sims, resets pop to starting state
@@ -52,30 +75,18 @@ void FoxPopulation::changeFoxCompartment(int vectorPos) {
     if (startCompartment != endCompartment) {
         switch (startCompartment) {
         case Fox::susceptible:
-            //susceptibles.erase(std::remove_if(susceptibles.begin(), susceptibles.end(), [](Fox* i) { return ((*i).getDiseaseState != Fox::susceptible); }));
-            //susceptibles.erase(std::remove(susceptibles.begin(), susceptibles.end(), ptr), susceptibles.end());
-            //susceptibles.erase(susceptibles.begin() + vectorPos);
             removeFox(susceptibles, ptr);
             break;
         case Fox::latent:
-            //latents.erase(std::remove_if(latents.begin(), latents.end(), [](Fox* i) { return ((*i).getDiseaseState() != Fox::latent); }));
-            //latents.erase(latents.begin() + vectorPos);
-            //latents.erase(std::remove(latents.begin(), latents.end(), &(*ptr)), latents.end());
             removeFox(latents, ptr);
             break;
         case Fox::infectious:
-            //infecteds.erase(std::remove_if(infecteds.begin(), infecteds.end(), [](Fox* i) { return ((*i).getDiseaseState != Fox::infectious); }));
-            //infecteds.erase(infecteds.begin() + passPos);
             removeFox(infecteds, ptr);
             break;
         case Fox::recovered:
-            //recovereds.erase(std::remove_if(recovereds.begin(), recovereds.end(), [](Fox* i) { return ((*i).getDiseaseState != Fox::recovered); }));
-            //recovereds.erase(recovereds.begin() + passPos);
             removeFox(recovereds, ptr);
             break;
         case Fox::dead:
-            //removeds.erase(std::remove_if(removeds.begin(), removeds.end(), [](Fox* i) { return ((*i).getDiseaseState != Fox::dead); }));
-            //removeds.erase(removeds.begin() + passPos);
             removeFox(removeds, ptr);
             break;
         }

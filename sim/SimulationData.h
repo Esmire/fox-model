@@ -15,6 +15,12 @@ public:
     void storeSeedFox(Fox f);
     SimulationData(int simNum, int popSize, int timestep);
     void printStuff();
+    std::vector<DiseaseData>* getDiseaseMatrix() { return &diseaseMatrix; }
+    PopulationData* getPopData() { return pop; }
+    int getSimNumber() { return simNumber; }
+    int getTimestepNumber() { return timestepNumber; }
+    int getN() { return N; }
+
 
 private:
 	int simNumber;

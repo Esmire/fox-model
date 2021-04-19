@@ -14,6 +14,7 @@ public:
     FoxPopulation(int N, int width, int height, bool bugs);
     void setUpSusceptibles();
     void removeFox(std::vector<Fox*> &compartment, Fox* ptr);
+    void makeNeighbors(std::vector<OrigFox> * pop, bool wrongFormula);
 
     //get the vectors of pointers so that later functions don't have to sort through the population
     std::vector<Fox*>* getLatents() { return &latents; }

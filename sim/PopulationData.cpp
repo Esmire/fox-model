@@ -17,12 +17,16 @@ void PopulationData::findNumHabitats(std::vector<OrigFox>* foxes) {
         switch (habitat) {
         case Fox::grass:
             grass++;
+            break;
         case Fox::mdsGentle: 
             gentle++;
+            break;
         case Fox::mdsRugged:
             rugged++;
+            break;
         case Fox::dunes: 
             dunes++;
+            break;
         //default:
             //throw "oh shit dude uninitialized habitat fox passed to findNumHabitats";
         }

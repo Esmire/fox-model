@@ -7,6 +7,7 @@
 #include "fox_model/FoxLibrary.h"
 #include "SimulationData.h"
 #include <iostream>
+#include <fstream>
 std::default_random_engine generator2;
 std::uniform_real_distribution<double> zeroToOne(0.0, 1.0);
 
@@ -63,6 +64,7 @@ void setSeedFox(bool highDensity, int N, FoxPopulation &pop, SimulationData &sim
 
 //Roll to see if the infecteds infect others
 void infect(std::vector<Fox*>* infPtr, int i) {
+    //std::cout << "fox " << i << " has " << (*infPtr)[i]->getOverlappingNeighbors()->size() << " neighbors \n";
     for (int j = 0; j < (*infPtr)[i]->getOverlappingNeighbors()->size(); j++) {
         NeighborInfo* neighbor = (*(*infPtr)[i]->getOverlappingNeighbors())[j]; //Yeah... This is still narsty.
         //If the neighbor fox is susceptible and the random roll is less than the transmission chance, infect the neighbor
@@ -116,17 +118,54 @@ void doTimeStep(FoxPopulation &p, int infectiousPeriod, int latentPeriod, Simula
         p.changeFoxCompartment(i);
     }
 }
-//Runs 1 sim and returns the data for it
-void runSimGroup(int N, int latentPeriod, int infectiousPeriod, FoxPopulation &p, SimulationData state, std::vector<SimulationData>* result, int time, int groupSize) {
+
+//Runs 1 sim group and adds the data for it to the results vector
+void runSimGroup(int N, int latentPeriod, int infectiousPeriod, FoxPopulation &p, std::vector<SimulationData>* result, int time, int groupSize, int simNum) {
+    PopulationData* popData = new PopulationData(p.getAll(), simNum, simNum + groupSize - 1); //I know it's weird, but I need this allocated
     for (int i = 0; i < groupSize; i++) {
+        SimulationData state(simNum + i, N, time);
+        state.updatePopSummary((*popData));
         setSeedFox(true, N, p, state);
         for (int j = 0; j < time; j++) {
-            doTimeStep(p, infectiousPeriod, latentPeriod, state, time);
+            doTimeStep(p, infectiousPeriod, latentPeriod, state, j);
         }
         (*result).push_back(state);
-        state.printStuff();
-        std::cout << "end of sim " << i;
+        //state.printStuff();
+        std::cout << "end of sim " << i + simNum << " ";
+        p.reset();
     }
+}
+
+//Writes two CSV files, one with the population data and one with the disease data, given a vector of simulations you ran.
+void writeToCSV(std::vector<SimulationData>* data) {
+    std::ofstream results;
+    results.open("PopData.csv");
+    results << "sim-number,population-size,num-grass,num-gentle,num-rugged,num-dunes,\n";
+    for (int i = 0; i < data->size(); i++) {
+        results << (*data)[i].getSimNumber() << ",";
+        results << (*data)[i].getN() << ",";
+        results << (*data)[i].getPopData()->getNumGrass() << ",";
+        results << (*data)[i].getPopData()->getNumGentle() << ",";
+        results << (*data)[i].getPopData()->getNumRugged() << ",";
+        results << (*data)[i].getPopData()->getNumDunes() << ",\n";
+    }
+    results.close();
+    //Starting a new for-loop because it didn't work when I tried opening the same file twice and I just want to make a csv dang it
+    results.open("SimData.csv");
+    results << "sim-number,time,num-sus,num-lat,num-inf,num-rec,num-rmv,\n";
+    for (int i = 0; i < data->size(); i++) {
+        std::vector<DiseaseData>* disease = (*data)[i].getDiseaseMatrix();
+        for (int j = 0; j < disease->size(); j++) {
+            results << (*data)[i].getSimNumber() << ",";
+            results << (*disease)[j].timestep << ",";
+            results << (*disease)[j].numSusceptible << ",";
+            results << (*disease)[j].numLatent << ",";
+            results << (*disease)[j].numInfectious << ",";
+            results << (*disease)[j].numRecovered << ",";
+            results << (*disease)[j].numDead << ",\n";
+        }
+    }
+    results.close();
 }
 
 
@@ -134,9 +173,9 @@ int main() {
     //tryStuff();
  //SET THE FOLLOWING
     int N = 1000;
-    int numSims = 2;
+    int numSims = 1000;
     int numTimeSteps = 365;
-    int resampleFreq = 10;
+    int resampleFreq = 10; //Don't set this equal to 0 or higher than your sim number. If you don't want resamples, set it equal to sim number.
     int islandWidth = 5000;
     int islandHeight = 30000; //i think the units are meters but honestly i dont know anymore i forgot
     bool origMethods = false;
@@ -147,18 +186,20 @@ int main() {
         std::vector<SimulationData>* results = &simData;
 
         int simGroupSize = resampleFreq;
-        for (int i = 0; i < (numSims / resampleFreq) + 1; i++) { //divide by 0 issue so fix that
+        for (int i = 0; i < (numSims / resampleFreq); i++) { //divide by 0 issue so fix that
             if (i == numSims / resampleFreq && numSims % resampleFreq != 0) {
                 simGroupSize = numSims % resampleFreq;
+                std::cout << simGroupSize;
             }
             FoxPopulation pop(N, islandWidth, islandHeight, origMethods);
             N = pop.getPopSizeGenerated();
-            std::cout << "generation complete";
-            SimulationData init(i, N, numTimeSteps); //fix this the i thing is wrong
-            PopulationData* popdata = new PopulationData(pop.getAll(), i, i + simGroupSize - 1);
-            init.updatePopSummary((*popdata));
-            runSimGroup(N, latentPeriod, infectiousPeriod, pop, init, results, numTimeSteps, simGroupSize);
+            std::cout << "generation complete" << "\n";
+            //SimulationData init(i, N, numTimeSteps); //fix this the i thing is wrong
+            //init.updatePopSummary((*popdata));
+            runSimGroup(N, latentPeriod, infectiousPeriod, pop, results, numTimeSteps, simGroupSize, i * resampleFreq);
         }
+        std::cout << "size is " << simData.size();
+        writeToCSV(results);
     }
     catch (const char* msg) {
         std::cout << msg << '\n';
