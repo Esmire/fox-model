@@ -41,7 +41,10 @@ double NeighborInfo::transmissionProbability() {
     }
     double stDev = sqrt(variance);
     std::normal_distribution<double> transmissionDistribution(expectedValue, stDev); //Sampler for transmission probability based on contact.
-    double returnVal = transmissionDistribution(generator1) * dailyContactTime;
+    double returnVal = transmissionDistribution(generator1);
+    if (returnVal > 1) { returnVal = 1; } //Yeah, I don't like this at all, but it's from the original code.
+    if (returnVal < 0) { returnVal = 0; }
+    returnVal = returnVal * dailyContactTime;
     if (returnVal > 1) { return 1; } //Yeah, I don't like this at all, but it's from the original code.
     if (returnVal < 0) { return 0; }
     else { return returnVal; }

@@ -8,6 +8,8 @@
 #include "SimulationData.h"
 #include <iostream>
 #include <fstream>
+#include "SeedFox.h"
+#include "TestSim.h"
 std::default_random_engine generator2;
 std::uniform_real_distribution<double> zeroToOne(0.0, 1.0);
 
@@ -28,16 +30,13 @@ NOTE TO SELF:
 When generating the fox population, you're comparing all their positions anyway. Why not sort them then?*/
 void setSeedFox(bool highDensity, int N, FoxPopulation &pop, SimulationData &sim){
     std::vector<OrigFox>* foxPop = pop.getAll();
-    int posArr[2];
-    (*foxPop)[0].getPos(posArr);
-    int minPos = posArr[1]; 
-    int maxPos = posArr[1];
+    int minPos = foxPop->at(0).getPos().yPos;
+    int maxPos = minPos;
     int yVal;
     int minIndex = 0; 
     int maxIndex = 0; //Referring to indices in the array that the min and max pos foxes have
     for (int i = 1; i < N; i++) {
-        (*foxPop)[i].getPos(posArr);
-        yVal = posArr[1];
+        yVal = foxPop->at(i).getPos().yPos;
         if (yVal > maxPos) {
             maxPos = yVal;
             maxIndex = i;
@@ -120,12 +119,16 @@ void doTimeStep(FoxPopulation &p, int infectiousPeriod, int latentPeriod, Simula
 }
 
 //Runs 1 sim group and adds the data for it to the results vector
-void runSimGroup(int N, int latentPeriod, int infectiousPeriod, FoxPopulation &p, std::vector<SimulationData>* result, int time, int groupSize, int simNum) {
+void runSimGroup(int N, int latentPeriod, int infectiousPeriod, FoxPopulation &p, std::vector<SimulationData>* result, int time, int groupSize, int simNum, int height) {
     PopulationData* popData = new PopulationData(p.getAll(), simNum, simNum + groupSize - 1); //I know it's weird, but I need this allocated
+    SeedFox seed;
+    seed.locatePotentialSeedFoxes(p, true, height);
     for (int i = 0; i < groupSize; i++) {
         SimulationData state(simNum + i, N, time);
         state.updatePopSummary((*popData));
-        setSeedFox(true, N, p, state);
+        //setSeedFox(true, N, p, state);
+
+        seed.sampleSeedFox(state, zeroToOne(generator2));
         for (int j = 0; j < time; j++) {
             doTimeStep(p, infectiousPeriod, latentPeriod, state, j);
         }
@@ -170,46 +173,50 @@ void writeToCSV(std::vector<SimulationData>* data) {
 
 
 int main() {
-    //tryStuff();
+    tryStuff();
  //SET THE FOLLOWING
-    int N = 1000;
-    int numSims = 1000;
+    /*
+    int N = 2000;
+    int numSims = 10;
     int numTimeSteps = 365;
     int resampleFreq = 10; //Don't set this equal to 0 or higher than your sim number. If you don't want resamples, set it equal to sim number.
     int islandWidth = 5000;
     int islandHeight = 30000; //i think the units are meters but honestly i dont know anymore i forgot
-    bool origMethods = false;
+    bool origMethods = true;
     int latentPeriod = 5;
     int infectiousPeriod = 21;
     try {
         std::vector<SimulationData> simData;
         std::vector<SimulationData>* results = &simData;
-
+        int origN = N;
         int simGroupSize = resampleFreq;
         for (int i = 0; i < (numSims / resampleFreq); i++) { //divide by 0 issue so fix that
             if (i == numSims / resampleFreq && numSims % resampleFreq != 0) {
                 simGroupSize = numSims % resampleFreq;
                 std::cout << simGroupSize;
             }
+            N = origN;
             FoxPopulation pop(N, islandWidth, islandHeight, origMethods);
+            std::cout << "sum is " << getTransmissionTotal(pop);
+            writeSumCSV(pop);
             N = pop.getPopSizeGenerated();
             std::cout << "generation complete" << "\n";
             //SimulationData init(i, N, numTimeSteps); //fix this the i thing is wrong
             //init.updatePopSummary((*popdata));
-            runSimGroup(N, latentPeriod, infectiousPeriod, pop, results, numTimeSteps, simGroupSize, i * resampleFreq);
+            runSimGroup(N, latentPeriod, infectiousPeriod, pop, results, numTimeSteps, simGroupSize, i * resampleFreq, islandHeight);
         }
         std::cout << "size is " << simData.size();
         writeToCSV(results);
     }
     catch (const char* msg) {
         std::cout << msg << '\n';
-    }
+    } */
     /*These are commented out because they're broken in the actual code. (Except on days equal to them, which
     I doubt happens enough to change the result in any meaningful way. If there are issues though, I'll add it.)
 
     int infectiousPeriodCutoff = 60;
     int latentPeriodCutoff = 14;
-    */
+ */   
 }
 
 /*planning stuff ignore this

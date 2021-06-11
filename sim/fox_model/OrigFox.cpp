@@ -31,7 +31,7 @@ bool OrigFox::placeFoxOnMap(int n, std::vector<OrigFox>* pop, int xSize, int ySi
         }
         if (geoMean > 0.75) {
             tooLarge = true;
-            clearNeighbors(); //Gets rid of the neighbor objects if it didn't work
+            clearNeighbors(); //Gets rid of the neighbor objects
         }
         i++;
     }

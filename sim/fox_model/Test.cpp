@@ -3,7 +3,9 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "OrigFox.h"
-
+#include "Map.h"
+#include "Cell.h"
+/*
 void testPlaceFoxOnMap(std::vector<OrigFox>* arr, int n, bool isWrong) {
 	int numFox = 0;
 	for (int i = 0; i < n; i++) {
@@ -57,9 +59,10 @@ void showIsland(int xSize, int ySize, std::vector<OrigFox>* pop, int n) { //I kn
 		std::cout << '\n';
 	}
 }
-
+*/
 void tryStuff() {
 	try {
+        /*
 		srand(1237);
 		//Tests needed:
 		//Test Fox methods
@@ -76,6 +79,7 @@ void tryStuff() {
 		fox2.getPos(pos2);
 		assert(0 <= pos1[0] <= 100 && 0 <= pos1[1] <= 100);
 		assert(0 <= pos2[0] <= 100 && 0 <= pos2[1] <= 100);
+        
 		    //getDistance
 		fox1.setPos(0, 3);
 		fox2.setPos(4, 0);
@@ -98,13 +102,23 @@ void tryStuff() {
 		    //placeFoxOnMap
 		std::vector<OrigFox> foxes (2000);
         std::vector<OrigFox>* arr = &foxes;
-		testPlaceFoxOnMap(arr, 2000, true);
-		testPlaceFoxOnMap(arr, 2000, false);
+		//testPlaceFoxOnMap(arr, 2000, true);
+		//testPlaceFoxOnMap(arr, 2000, false);
 		//Check distributions are as expected including occurance of edge cases
 		//Check density
 		//Check final overlap
 		/*Note to self: I also want to write a test sim that places the foxes at regular instead of random intervals
 		just to make sure everything is working as it should for the final version.*/
+
+
+        //TEST CREATING A MAP
+        Map testMap(5000, 30000, 200);
+        Pos inCellOne;
+        inCellOne.xPos = 1;
+        inCellOne.yPos = 1;
+        Cell* cellOnePtr = testMap.getCellAtPoint(inCellOne);
+        Cell* firstCell = &(*testMap.getCells())[0][0];
+        assert(cellOnePtr == firstCell);
 	}
 	catch (const char* msg) {
 		std::cout << msg << '\n';

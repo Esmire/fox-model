@@ -151,20 +151,26 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Cell.h" />
     <ClInclude Include="fox.h" />
     <ClInclude Include="FoxLibrary.h" />
     <ClInclude Include="FoxPopulation.h" />
+    <ClInclude Include="Map.h" />
     <ClInclude Include="NeighborInfo.h" />
     <ClInclude Include="OrigFox.h" />
     <ClInclude Include="Overlap.h" />
+    <ClInclude Include="Pos.h" />
     <ClInclude Include="Test.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Cell.cpp" />
     <ClCompile Include="fox.cpp" />
     <ClCompile Include="FoxPopulation.cpp" />
+    <ClCompile Include="Map.cpp" />
     <ClCompile Include="NeighborInfo.cpp" />
     <ClCompile Include="OrigFox.cpp" />
     <ClCompile Include="Overlap.cpp" />
+    <ClCompile Include="Pos.cpp" />
     <ClCompile Include="Test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
