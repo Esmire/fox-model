@@ -11,6 +11,6 @@ public:
 
 private:
     Fox* currentSeedFox;
-    std::vector<OrigFox*> seedFoxes;
+    std::vector<Fox*> seedFoxes;
 };
 #endif

@@ -7,8 +7,8 @@ using namespace foxlib;
 // Stores information about how the foxes are distributed for a group of simulations that share a common starting config.
 struct PopulationData {
 public:
-    PopulationData(std::vector<OrigFox>* foxes, int start, int end);
-    void findNumHabitats(std::vector<OrigFox>* foxes);
+    PopulationData(std::vector<Fox>* foxes, int start, int end);
+    void findNumHabitats(std::vector<Fox>* foxes);
     //setters
     /*
     void setNumFoxes(std::vector<Fox>* foxes) { numFoxes = (*foxes).size; }

@@ -29,7 +29,7 @@ library at all. I need to go back and change how getPos works, but I'll also nee
 NOTE TO SELF:
 When generating the fox population, you're comparing all their positions anyway. Why not sort them then?*/
 void setSeedFox(bool highDensity, int N, FoxPopulation &pop, SimulationData &sim){
-    std::vector<OrigFox>* foxPop = pop.getAll();
+    std::vector<Fox>* foxPop = pop.getAll();
     int minPos = foxPop->at(0).getPos().yPos;
     int maxPos = minPos;
     int yVal;

@@ -2,7 +2,7 @@
 
 //Finds all the possible seed foxes in a given fox population. Samples in top 300 for high dens and bottom 300 for low dens.
 void SeedFox::locatePotentialSeedFoxes(FoxPopulation &pop, bool highDensity, int islandHeight) {
-    std::vector<OrigFox>* foxPop = pop.getAll();
+    std::vector<Fox>* foxPop = pop.getAll();
     int yVal, upperBound, lowerBound; //fox y coord, bounds search area
     int extremeIndex = 0; //Will hold index in the population array for fox that has highest (high density) or lowest (low density) y coord
     int extremePos = foxPop->at(0).getPos().yPos; //Position of that fox to be used for comparison

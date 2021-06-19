@@ -12,11 +12,11 @@ Cell::Cell(int xIndex, int yIndex, int size) {
 //Adds a fox to the cell
 void Cell::addFox(Fox* f) {
     foxesInCell.push_back(f);
-    f->getCurrentCells()->push_back(this);
+    //f->getCurrentCells()->push_back(this);
 }
 
 //Removes fox from cell
-void Cell::removeFox(Fox* f) {
+void Cell::removeFoxCell(Fox* f) {
     bool foundFox = false;
     int i = 0;
     while (!foundFox) {
@@ -26,7 +26,7 @@ void Cell::removeFox(Fox* f) {
         }
         i++;
     }
-    tellFox(f);
+    //tellFox(f);
 }
 
 //Notifies fox it has been removed from this cell

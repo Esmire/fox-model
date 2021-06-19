@@ -14,7 +14,11 @@ public:
     Fox();
     void placeFoxOnMap();
     void genPos();
-    void genRadius();
+    void genRadiusGrass();
+    void genRadiusGentle();
+    void genRadiusRugged();
+    void genRadiusDunes();
+    void genCriticalPointsFromPos();
     double getDistance(Fox f1);
     void addNeighbor(NeighborInfo &neighbor) { overlappingNeighbors.push_back(&neighbor); }
     void clearNeighbors();
@@ -27,16 +31,16 @@ public:
     void move(int deltX, int deltY);
     double findMinta(Fox &f);
     double findOverlap(Fox &f);
+    bool stillInHabitat(int deltY);
+    bool stillOnIsland(int deltX, int deltY);
 
     //Enumerators for various states
     enum kDiseaseState { susceptible, latent, infectious, recovered, dead };
     enum kHabitats { grass, mdsGentle, mdsRugged, dunes, uninit };
 
     //Getters and setters
-    //void getPos(int arr[]);
     Pos getPos() { return position; }
     Pos getDefaultPos() { return defaultPosition; }
-    //void setPos(int x, int y) { posX = x, posY = y; }
     void setPos(int x, int y) { position.xPos = x; position.yPos = y; }
     void setDefaultPos (int x, int y) { defaultPosition.xPos = x; defaultPosition.yPos = y; }
     void setHabitat(kHabitats habitat);
@@ -52,12 +56,12 @@ public:
     int getNum() { return num; }
     void setCurrentCells(std::vector<Cell*> &cells) { currentCells = cells; }
     std::vector<Cell*>* getCurrentCells() { return &currentCells; }
+    void setMap(Map* map) {  m = map; }
 
 private:
-    //int posX, posY;
     Pos position;
     Pos defaultPosition;
-    Pos criticalPoints[9];
+    Pos criticalPoints[8];
     double rangeRadius;
     kHabitats habitatType;
     kDiseaseState diseaseState = susceptible;

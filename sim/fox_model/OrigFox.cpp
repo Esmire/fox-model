@@ -89,15 +89,15 @@ void OrigFox::genPos(int xSize, int ySize) {
 //Testing note: we need to check where these distributions came from and whether it makes sense to exponentiate the result.
 
 //Makes random engine generators
+
 std::default_random_engine generator;
 std::normal_distribution<double> distribution1(6.570392, 0.2348970); //Grass radius
 std::normal_distribution<double> distribution2(5.642243, 0.2214349); //Rugged radius
 std::normal_distribution<double> distribution3(6.223819, 0.3502707); //Gentle radius
 std::normal_distribution<double> distribution4(5.530671, 0.4102617); //Dune radius
 
-
-/*Generates radius based on the habitat type. Since different habitats have different distributions, the habitat
-types are different. Creates a normal distribution per habitat type, then sets radius.*/
+//Generates radius based on the habitat type. Since different habitats have different distributions, the habitat
+//types are different. Creates a normal distribution per habitat type, then sets radius.
 void OrigFox::genRadius() {
     switch (getHabitat()) {
     case grass:
@@ -119,5 +119,4 @@ void OrigFox::genRadius() {
         throw ("Unexpected habitat type passed to OrigFox::genRadius.");
     }
 }
-
 }

@@ -20,20 +20,22 @@ void Map::makeCells() {
             Cell currCell(cellSize * j, cellSize * i, cellSize);
             cells[i - 1].push_back(currCell);
         }
-    }}
-
+    }
+}
 
 //Given a position on the map, returns the cell that position is in
 Cell* Map::getCellAtPoint(Pos A) {
-    int rowIndex = A.yPos / getCellSize();
+    int wtf = A.yPos;
+    int why = cellSize;
+    int rowIndex = A.yPos / cellSize;
     if (rowIndex >= getNumCellRows()) { //Added since only the center of the circle has to stay on the island, apparently.
         rowIndex = getNumCellRows() - 1;
     }
-    int colIndex = A.xPos / getCellSize();
+    int colIndex = A.xPos / cellSize;
     if (colIndex >= getNumCellCols()) {
         colIndex = getNumCellCols() - 1;
     }
-    std::vector<std::vector<Cell>>* twoDim = getCells();
-    return &(*twoDim)[rowIndex][colIndex];
+    return &(*getCells())[rowIndex][colIndex];
 }
+
 }

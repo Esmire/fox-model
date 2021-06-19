@@ -5,6 +5,7 @@
 #include "OrigFox.h"
 #include "Map.h"
 #include "Cell.h"
+#include "FoxPopulation.h"
 /*
 void testPlaceFoxOnMap(std::vector<OrigFox>* arr, int n, bool isWrong) {
 	int numFox = 0;
@@ -119,6 +120,50 @@ void tryStuff() {
         Cell* cellOnePtr = testMap.getCellAtPoint(inCellOne);
         Cell* firstCell = &(*testMap.getCells())[0][0];
         assert(cellOnePtr == firstCell);
+
+        //TEST THAT THE FOX KNOWS WHAT CELL IT'S IN
+        Fox f1;
+        Fox f2;
+        f1.setPos(100, 100);
+        f2.setPos(200, 100);
+        f1.setRadius(99);
+        f2.setRadius(100);
+        f1.genCriticalPointsFromPos();
+        Cell* testCell = testMap.getCellAtPoint(f1.getPos());
+        assert(testCell->getCellTopRight().xPos == 200);
+        assert(testCell->getCellTopRight().yPos == 200);
+        f1.setMap(&testMap);
+        std::vector<Cell*> cellsOccupied1 = f1.getCellsFromPos();
+        f2.setMap(&testMap);
+        f1.setHabitat(Fox::kHabitats::grass);
+        f1.move(300, 300);
+        f1.updateCurrentCells();
+        f1.randomWalkStep();
+        f1.randomWalkStep();
+
+        //TEST DUNES GENERATION
+        Map newMap(5000, 30000, 500);
+        FoxPopulation p(1015, 5000, 30000, newMap);
+        p.genFoxesDunes(315, newMap);
+        for (int i = 0; i < 315; i++) {
+            p.getAll()->at(i).updateCurrentCells();
+        }
+
+        for (int i = 0; i < 315; i++) {
+            if (p.getAll()->at(i).checkOverlapsValid() == false) {
+                int a = 3;
+            }
+        }
+
+
+       //TEST RANDOMIZED MOVEMENT
+        for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < 315; i++) {
+                p.getAll()->at(i).randomWalkStep();
+                //std::cout << "heck";
+            }
+            std::cout << "hhh \n";
+        }
 	}
 	catch (const char* msg) {
 		std::cout << msg << '\n';

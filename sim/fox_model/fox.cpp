@@ -3,6 +3,7 @@
 #include <array>
 #include "NeighborInfo.h"
 #include <random>
+#include <iostream>
 
 namespace foxlib {
 //Sets initial values to be recognizable so we know this fox isn't in the simulation yet.
@@ -11,6 +12,7 @@ Fox::Fox() {
     position.yPos = -1;
     habitatType = kHabitats::uninit;
     rangeRadius = -1;
+
 }
 
 /*For our use later because I think I could write a more efficient version. There's really no need to check distance
@@ -20,7 +22,16 @@ think it's possible to do something similar to random diffusion to ensure that a
 for every single simulation. That way, N stays constant.*/
 void Fox::genPos() {};
 void Fox::placeFoxOnMap() {}
-void Fox::genRadius() {}
+
+std::default_random_engine generator4;
+std::normal_distribution<double> distributionG(713.65, 1.59); //Grass radius
+std::normal_distribution<double> distributionR(282.09, 1.56); //Rugged radius
+std::normal_distribution<double> distributionGe(504.63, 2.02); //Gentle radius
+std::normal_distribution<double> distributionD(252.31, 2.28); //Dune radius
+void Fox::genRadiusDunes() { rangeRadius = distributionD(generator4); }
+void Fox::genRadiusRugged() { rangeRadius = distributionR(generator4); }
+void Fox::genRadiusGentle() { rangeRadius = distributionGe(generator4); }
+void Fox::genRadiusGrass() { rangeRadius = distributionG(generator4); }
 
 //Calculates distance between positions of fox called on and fox passed as param. It's just distance formula.
 double Fox::getDistance(Fox f1) {
@@ -36,25 +47,20 @@ double Fox::getDistance(Fox f1) {
         double distance = sqrt(xDis * xDis + yDis * yDis);
         return distance;
     }
-
 }
 
 //Habitat setter. Sets the habitat based on passed habitat character.
 void Fox::setHabitat(kHabitats habitat) {
     switch (habitat) {
-        //G for Grass
     case grass:
         habitatType = grass;
         break;
-        //R for MDS.Rugged
     case mdsRugged:
         habitatType = mdsRugged;
         break;
-        //L for MDS.Gentle
     case mdsGentle:
         habitatType = mdsGentle;
         break;
-        //D for Dunes
     case dunes:
         habitatType = dunes;
         break;
@@ -95,14 +101,32 @@ double Fox::findMinta(Fox &f) {
     return O / (R1 * rangeRadius * 3.14159);
 }
 
-//Given the Fox's current index, find which cells it could plausibly be in (inscribing circular territory in square to make code easier)
+//Given the initial fox position, generates the critical points
+void Fox::genCriticalPointsFromPos() {
+    int x = position.xPos;
+    int y = position.yPos;
+    int rad = (int)rangeRadius + 1; //Makes square slightly larger than actual fox territory circle instead of smaller.
+    Pos topLeft(x - rad, y - rad), top(x, y - rad), topRight(x + rad, y - rad), right(x + rad, y),
+        bottomRight(x + rad, y + rad), bottom(x, y + rad), bottomLeft(x - rad, y + rad), Left(x - rad, y);
+    criticalPoints[0] = topLeft;
+    criticalPoints[1] = top;
+    criticalPoints[2] = topRight;
+    criticalPoints[3] = right;
+    criticalPoints[4] = bottomRight;
+    criticalPoints[5] = bottom;
+    criticalPoints[6] = bottomLeft;
+    criticalPoints[7] = Left;
+}
+
+//Given the Fox's current positiion, find which cells it could plausibly be in (inscribing circular territory in square to make code easier)
 std::vector<Cell*> Fox::getCellsFromPos() {
     std::vector<Cell*> cellsInhabited;
-    for (int i = 0; i < 9; i++) {
+    for (int i = 0; i < 8; i++) {
         cellsInhabited.push_back(m->getCellAtPoint(criticalPoints[i]));
     }
-    std::vector<Cell*>::iterator it;
-    it = std::unique(cellsInhabited.begin(), cellsInhabited.end());
+    cellsInhabited.push_back(m->getCellAtPoint(position));
+    std::sort(cellsInhabited.begin(), cellsInhabited.end());
+    cellsInhabited.erase(unique(cellsInhabited.begin(), cellsInhabited.end()), cellsInhabited.end());
     return cellsInhabited;
 }
 
@@ -110,7 +134,7 @@ std::vector<Cell*> Fox::getCellsFromPos() {
 void Fox::updateCurrentCells() {
     for (int i = 0; i < currentCells.size(); i++) {
         Fox* f1 = this;
-        currentCells[i]->removeFox(f1);
+        currentCells[i]->removeFoxCell(f1);
     }
     currentCells = getCellsFromPos();
     for (int i = 0; i < currentCells.size(); i++) {
@@ -125,8 +149,10 @@ bool Fox::checkOverlapsValid() {
     std::vector<Cell*> cells = getCellsFromPos();
     for (int i = 0; i < cells.size(); i++) {
         std::vector<Fox*>* foxVec = cells[i]->getFoxesInCell();
+        if(foxVec->size() > 100)
+            std::cout << foxVec->size() << " ";
         for (int j = 0; j < foxVec->size(); j++) {
-            if (findMinta((*foxVec->at(j))) > 0.75) {
+            if (findMinta((*foxVec->at(j))) > 0.75 && foxVec->at(j) != this) {
                 return false;
             }
         }
@@ -135,7 +161,7 @@ bool Fox::checkOverlapsValid() {
 }
 
 std::default_random_engine generator3;
-std::uniform_real_distribution<double> stepGen(-51, 51);
+std::uniform_real_distribution<double> stepGen(-501, 501);
 
 //Makes fox move up to 50 meters in each direction. If move doesn't work, attempts the same move but in the opposite direction.
 void Fox::randomWalkStep() {
@@ -143,52 +169,70 @@ void Fox::randomWalkStep() {
     int stepY = stepGen(generator3);
     move(stepX, stepY);
     if (checkOverlapsValid() == false) {
-        move(-2*stepX, -2*stepY);
+        move(-2 * stepX, -2 * stepY);
         if (checkOverlapsValid() == false) {
             move(stepX, stepY);
-        } else {
+        }
+        else {
             updateCurrentCells();
         }
-    } else {
+    }
+    else {
         updateCurrentCells();
     }
 }
 
 //Changes fox location, but check to make sure fox stays within habitat type.
-void Fox::move(int deltX, int deltY){
-    switch (habitatType) {
-    case grass:
-        if (position.yPos >= 0.3*m->getySize()) {
-            deltX = 0;
-            deltY = 0;
-        }
-        break;
-        //R for MDS.Rugged
-    case mdsRugged:
-        if (position.yPos <= 0.3*m->getySize() || position.yPos >= 0.6*m->getySize()) {
+void Fox::move(int deltX, int deltY) {
+    if (stillInHabitat(deltY) == false || stillOnIsland(deltX, deltY) == false) {
         deltX = 0;
         deltY = 0;
     }
-        break;
-        //L for MDS.Gentle
-    case mdsGentle:
-        if (position.yPos <= 0.6*m->getySize() || position.yPos >= 0.9*m->getySize()) {
-            deltX = 0;
-            deltY = 0;
-        }
-        break;
-        //D for Dunes
-    case dunes:
-        if (position.yPos <= 0.9*m->getySize()) {
-            deltX = 0;
-            deltY = 0;
-        }
-        break;
-    default:
-        throw "Fox::move ran default switch.";
-    }
     position.xPos += deltX;
     position.yPos += deltY;
+    for (int i = 0; i < 9; i++) {
+        criticalPoints[i].xPos += deltX;
+        criticalPoints[i].yPos += deltY;
+    }
 }
 
+//Checks to see if a fox, after moving, will still be in its assigned habitat
+bool Fox::stillInHabitat(int deltY) {
+    int newY = position.yPos + deltY;
+    switch (habitatType) {
+    case grass:
+        if (newY >= 0.3*m->getySize()) {
+            return false;
+        } return true;
+    case mdsRugged:
+        if (newY < 0.3*m->getySize() || position.yPos >= 0.6*m->getySize()) {
+            return false;
+        } return true;
+    case mdsGentle:
+        if (newY < 0.6*m->getySize() || position.yPos >= 0.9*m->getySize()) {
+            return false;
+        } return true;
+    case dunes:
+        if (newY < 0.9*m->getySize()) {
+            return false;
+        } return true;
+    default:
+        throw "Fox::stillInHabitat ran default switch.";
+    }
+}
+
+//Checks to see if a fox, after moving, will still be on the island
+bool Fox::stillOnIsland(int deltX, int deltY) {
+    int minX = getPos().xPos - getRadius() + deltX;
+    int minY = getPos().yPos - getRadius() + deltY;
+    int maxX = getPos().xPos + getRadius() + deltX;
+    int maxY = getPos().yPos + getRadius() + deltY;
+    if (minX < 0 || minY < 0) {
+        return false;
+    }
+    if (maxX > m->getxSize() || maxY > m->getySize()) {
+        return false;
+    }
+    return true;
+}
 }

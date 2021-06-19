@@ -1,7 +1,7 @@
 #include "PopulationData.h"
 
 //Given a vector of newly-created foxes, a start sim, and an end sim, constructor extracts and stores data.
-PopulationData::PopulationData(std::vector<OrigFox>* foxes, int start, int end) {
+PopulationData::PopulationData(std::vector<Fox>* foxes, int start, int end) {
     numFoxes = (*foxes).size();
     simStart = start;
     simEnd = end;
@@ -9,7 +9,7 @@ PopulationData::PopulationData(std::vector<OrigFox>* foxes, int start, int end) 
 }
 
 //From the vector containing the fox population, finds the number of foxes in each habitat region and stores the values
-void PopulationData::findNumHabitats(std::vector<OrigFox>* foxes) {
+void PopulationData::findNumHabitats(std::vector<Fox>* foxes) {
     int grass, rugged, gentle, dunes;
     grass = rugged = gentle = dunes = 0;
     for (size_t i = 0; i < (*foxes).size(); i++) {

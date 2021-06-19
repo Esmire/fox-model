@@ -16,10 +16,14 @@ private:
 
 public:
     void addFox(Fox* f);
-    void removeFox(Fox* f);
+    void removeFoxCell(Fox* f);
     void tellFox(Fox* f);
     std::vector<Fox*>* getFoxesInCell() { return &foxesInCell; }
     Cell(int xIndex, int yIndex, int size);
+
+    //Getters
+    Pos getCellTopRight() { return cellTopRight; }
+    int getSideLength() { return sideLength; }
 };
 #endif
 }
