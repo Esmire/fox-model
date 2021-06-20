@@ -11,14 +11,16 @@ public:
    
     void reset();
     void changeFoxCompartment(int vectorPos);
-    FoxPopulation(int N, int width, int height, Map map);
+    FoxPopulation(int N, int width, int height, Map &map);
     void setUpSusceptibles();
     void removeFox(std::vector<Fox*> &compartment, Fox* ptr);
-    void makeNeighbors(std::vector<OrigFox> * pop, bool wrongFormula);
+    void makeNeighbors();
     void genFoxesDunes(int numDunes, Map &map);
     void genFoxesGentle(int numGentle, Map &map);
     void genFoxesRugged(int numRugged, Map &map);
     void genFoxesGrass(int numGrass, Map &map);
+    void takeTenSteps();
+    void resetNeighbors();
 
     //get the vectors of pointers so that later functions don't have to sort through the population
     std::vector<Fox*>* getLatents() { return &latents; }
@@ -27,7 +29,7 @@ public:
     std::vector<Fox*>* getDead() { return &removeds; }
     std::vector<Fox*>* getRecovereds() { return &recovereds; }
     std::vector<Fox>* getAll() { return &population; }
-    int getPopSizeGenerated() { return popSizeGenerated; }
+    int getPopSizeGenerated() { return population.size(); }
 
 private:
     bool initialized = false; //Whether it's a new population or whether it's already gone through a simulation
@@ -37,6 +39,7 @@ private:
     std::vector<Fox*> infecteds;
     std::vector<Fox*> recovereds;
     std::vector<Fox*> removeds;
+    Map* islandMap;
     int popSizeGenerated;
     int dunesDensity = 21;
     int ruggedDensity = 9;
@@ -47,9 +50,9 @@ private:
     int gentlePop = 225;
     int grassPop = 90;
     int dunesSpacer = 200;
-    int gentleSpacer;
-    int ruggedSpacer;
-    int grassSpacer;
+    int gentleSpacer = 400;
+    int ruggedSpacer = 250;
+    int grassSpacer = 600;
 };
 
 #endif

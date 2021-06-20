@@ -128,12 +128,13 @@ void tryStuff() {
         f2.setPos(200, 100);
         f1.setRadius(99);
         f2.setRadius(100);
-        f1.genCriticalPointsFromPos();
+        //f1.genCriticalPointsFromPos();
         Cell* testCell = testMap.getCellAtPoint(f1.getPos());
         assert(testCell->getCellTopRight().xPos == 200);
         assert(testCell->getCellTopRight().yPos == 200);
         f1.setMap(&testMap);
         std::vector<Cell*> cellsOccupied1 = f1.getCellsFromPos();
+        //std::vector<Cell*> cellsOccupied2 = f1.getCellsFromPosFast();
         f2.setMap(&testMap);
         f1.setHabitat(Fox::kHabitats::grass);
         f1.move(300, 300);
@@ -143,8 +144,8 @@ void tryStuff() {
 
         //TEST DUNES GENERATION
         Map newMap(5000, 30000, 500);
-        FoxPopulation p(1015, 5000, 30000, newMap);
-        p.genFoxesDunes(315, newMap);
+        FoxPopulation p(1035, 5000, 30000, newMap);
+        //p.genFoxesDunes(315, newMap);
         for (int i = 0; i < 315; i++) {
             p.getAll()->at(i).updateCurrentCells();
         }
@@ -154,15 +155,15 @@ void tryStuff() {
                 int a = 3;
             }
         }
-
+        
 
        //TEST RANDOMIZED MOVEMENT
-        for (int i = 0; i < 100; i++) {
-            for (int i = 0; i < 315; i++) {
-                p.getAll()->at(i).randomWalkStep();
+        for (int i = 0; i < 50; i++) {
+            for (int j = 0; j < 1035; j++) {
+                p.getAll()->at(j).randomWalkStep();
                 //std::cout << "heck";
             }
-            std::cout << "hhh \n";
+            //std::cout << "hhh \n";
         }
 	}
 	catch (const char* msg) {

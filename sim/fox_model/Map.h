@@ -18,6 +18,7 @@ public:
     Map(int islandXSize, int islandYSize, int cellSideLength);
     void makeCells();
     Cell* getCellAtPoint(Pos A);
+    std::vector<Cell*> getCellsInBox(int xMax, int xMin, int yMax, int yMin);
 
     //getters
     int getxSize() { return xSize; }

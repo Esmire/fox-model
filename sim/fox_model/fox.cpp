@@ -72,6 +72,7 @@ void Fox::setHabitat(kHabitats habitat) {
 //This is to avoid a memory leak if a randomly generated fox has to be resampled.
 void Fox::clearNeighbors() {
     for (size_t i = 0; i < overlappingNeighbors.size(); i++) {
+        removeNeighbor(overlappingNeighbors[i]);
         delete(overlappingNeighbors[i]);
     }
     overlappingNeighbors.clear();
@@ -83,6 +84,33 @@ void Fox::informNeighborFoxes() {
     for (size_t i = 0; i < overlappingNeighbors.size(); i++) {
         Fox* foxPtr = (*overlappingNeighbors[i]).getOtherFox(*this);
         (*foxPtr).addNeighbor((*overlappingNeighbors[i]));
+    }
+}
+
+//Finds whether passed fox is neighbor of fox this is called on
+bool Fox::isNeighbor(Fox* f) {
+    for (int i = 0; i < overlappingNeighbors.size(); i++) {
+        if (overlappingNeighbors[i]->getOtherFox((*this)) == f) {
+            return true;
+        }
+    }
+    return false;
+}
+
+//Given a fox, a geometric mean, and an overlap area value, creates a neighbor info object and makes called fox and passed foxes neighbors
+void Fox::addFoxNeighbor(Fox* f, double minta, double overlap) {
+    NeighborInfo* n = new NeighborInfo((*this), (*f), overlap, minta);
+    overlappingNeighbors.push_back(n);
+    f->addNeighbor((*n));
+}
+
+//Removes the passed NeighborInfo object from the fox that isn't this. Allows neighbor object deletion without dangling pointers.
+void Fox::removeNeighbor(NeighborInfo* neighbor) {
+    std::vector<NeighborInfo*>* neighborVec = neighbor->getOtherFox((*this))->getOverlappingNeighbors();
+    for (int i = 0; i < neighborVec->size(); i++) {
+        if (neighbor == neighborVec->at(i)) {
+            neighborVec->erase(neighborVec->begin() + i);
+        }
     }
 }
 
@@ -101,33 +129,14 @@ double Fox::findMinta(Fox &f) {
     return O / (R1 * rangeRadius * 3.14159);
 }
 
-//Given the initial fox position, generates the critical points
-void Fox::genCriticalPointsFromPos() {
-    int x = position.xPos;
-    int y = position.yPos;
-    int rad = (int)rangeRadius + 1; //Makes square slightly larger than actual fox territory circle instead of smaller.
-    Pos topLeft(x - rad, y - rad), top(x, y - rad), topRight(x + rad, y - rad), right(x + rad, y),
-        bottomRight(x + rad, y + rad), bottom(x, y + rad), bottomLeft(x - rad, y + rad), Left(x - rad, y);
-    criticalPoints[0] = topLeft;
-    criticalPoints[1] = top;
-    criticalPoints[2] = topRight;
-    criticalPoints[3] = right;
-    criticalPoints[4] = bottomRight;
-    criticalPoints[5] = bottom;
-    criticalPoints[6] = bottomLeft;
-    criticalPoints[7] = Left;
-}
-
 //Given the Fox's current positiion, find which cells it could plausibly be in (inscribing circular territory in square to make code easier)
 std::vector<Cell*> Fox::getCellsFromPos() {
-    std::vector<Cell*> cellsInhabited;
-    for (int i = 0; i < 8; i++) {
-        cellsInhabited.push_back(m->getCellAtPoint(criticalPoints[i]));
-    }
-    cellsInhabited.push_back(m->getCellAtPoint(position));
-    std::sort(cellsInhabited.begin(), cellsInhabited.end());
-    cellsInhabited.erase(unique(cellsInhabited.begin(), cellsInhabited.end()), cellsInhabited.end());
-    return cellsInhabited;
+    int rad = (int)rangeRadius + 1;
+    int maxX = position.xPos + rad;
+    int minX = position.xPos - rad;
+    int maxY = position.yPos + rad;
+    int minY = position.yPos - rad;
+    return m->getCellsInBox(maxX, minX, maxY, minY);
 }
 
 //Changes the cells a fox is in to accomedate for it moving
@@ -143,21 +152,36 @@ void Fox::updateCurrentCells() {
     }
 }
 
-//Goes thourgh all the foxes that share cells with this fox to see if above 0.75 geometric mean overlap ratio threshold
+/*Goes thourgh all the foxes that share cells with this fox to see if above 0.75 geometric mean overlap ratio threshold.
+Because square root is slow, flags each fox that has been checked already in case two foxes share two cells. Then unflags.*/
 bool Fox::checkOverlapsValid() {
     bool validOverlap = true;
     std::vector<Cell*> cells = getCellsFromPos();
     for (int i = 0; i < cells.size(); i++) {
         std::vector<Fox*>* foxVec = cells[i]->getFoxesInCell();
-        if(foxVec->size() > 100)
-            std::cout << foxVec->size() << " ";
         for (int j = 0; j < foxVec->size(); j++) {
-            if (findMinta((*foxVec->at(j))) > 0.75 && foxVec->at(j) != this) {
-                return false;
+            if (foxVec->at(j)->hasBeenChecked == false) {
+                if (findMinta((*foxVec->at(j))) > 0.75 && foxVec->at(j) != this) {
+                    uncheckFoxes(i);
+                    return false;
+                }
             }
+            foxVec->at(j)->hasBeenChecked = true;
         }
     }
+    uncheckFoxes(cells.size());
     return true;
+}
+
+//Given an index of the cells array, sets all foxes in cells the current fox is in to unchecked
+void Fox::uncheckFoxes(int finalIndex) {
+    std::vector<Cell*> cells = getCellsFromPos();
+    for (int i = 0; i < finalIndex; i++) {
+        std::vector<Fox*>* foxVec = cells[i]->getFoxesInCell();
+        for (int j = 0; j < foxVec->size(); j++) {
+            foxVec->at(j)->hasBeenChecked == false;
+        }
+    }
 }
 
 std::default_random_engine generator3;
@@ -169,7 +193,7 @@ void Fox::randomWalkStep() {
     int stepY = stepGen(generator3);
     move(stepX, stepY);
     if (checkOverlapsValid() == false) {
-        move(-2 * stepX, -2 * stepY);
+        move(-stepX, -stepY);
         if (checkOverlapsValid() == false) {
             move(stepX, stepY);
         }
@@ -179,6 +203,7 @@ void Fox::randomWalkStep() {
     }
     else {
         updateCurrentCells();
+        
     }
 }
 
@@ -190,10 +215,6 @@ void Fox::move(int deltX, int deltY) {
     }
     position.xPos += deltX;
     position.yPos += deltY;
-    for (int i = 0; i < 9; i++) {
-        criticalPoints[i].xPos += deltX;
-        criticalPoints[i].yPos += deltY;
-    }
 }
 
 //Checks to see if a fox, after moving, will still be in its assigned habitat
@@ -223,14 +244,14 @@ bool Fox::stillInHabitat(int deltY) {
 
 //Checks to see if a fox, after moving, will still be on the island
 bool Fox::stillOnIsland(int deltX, int deltY) {
-    int minX = getPos().xPos - getRadius() + deltX;
-    int minY = getPos().yPos - getRadius() + deltY;
-    int maxX = getPos().xPos + getRadius() + deltX;
-    int maxY = getPos().yPos + getRadius() + deltY;
+    int minX = getPos().xPos - (getRadius() + 1) + deltX;
+    int minY = getPos().yPos - (getRadius() + 1) + deltY;
+    int maxX = getPos().xPos + (getRadius() + 1) + deltX;
+    int maxY = getPos().yPos + (getRadius() + 1) + deltY;
     if (minX < 0 || minY < 0) {
         return false;
     }
-    if (maxX > m->getxSize() || maxY > m->getySize()) {
+    if (maxX >= m->getxSize() || maxY >= m->getySize()) {
         return false;
     }
     return true;

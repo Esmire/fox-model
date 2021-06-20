@@ -5,13 +5,25 @@
 #include "OrigFox.h"
 #include <iostream>
 namespace foxlib {
-
 //Generates initial, fully susceptible fox population of foxes from passed parameters
-FoxPopulation::FoxPopulation(int N, int islandWidth, int islandHeight, Map map) {
+FoxPopulation::FoxPopulation(int N, int islandWidth, int islandHeight, Map &map) {
     population.clear();
-    std::vector<Fox>* popPtr = &population;
-
-    //makeNeighbors(popPtr, bugs);
+    islandMap = &map;
+    genFoxesDunes(dunesPop, map);
+    genFoxesGrass(grassPop, map);
+    genFoxesGentle(gentlePop, map);
+    genFoxesRugged(ruggedPop, map);
+    popSizeGenerated = N;
+    for (int i = 0; i < N; i++) {
+        population[i].updateCurrentCells();
+        population[i].setNum(i);
+    }
+    for (int i = 0; i < 20; i++) {
+        for (int j = 0; j < N; j++) {
+            population[j].randomWalkStep();
+        }
+    }
+    makeNeighbors();
     setUpSusceptibles();
 }
 
@@ -25,7 +37,6 @@ firstFox.setHabitat(Fox::kHabitats::dunes);
 int lastY = map.getySize()*0.9 + 100;
 int lastX = (int)firstFox.getRadius() + 1;
 firstFox.setPos(lastX, lastY);
-firstFox.genCriticalPointsFromPos();
 population.push_back(firstFox);
 previousFox = firstFox;
 for (int i = 0; i < numDunes - 1; i++) {
@@ -35,12 +46,10 @@ for (int i = 0; i < numDunes - 1; i++) {
     nextFox.setHabitat(Fox::kHabitats::dunes);
     if (previousFox.stillOnIsland(dunesSpacer, 0)) {
         nextFox.setPos(lastX + dunesSpacer, lastY);
-        nextFox.genCriticalPointsFromPos();
         lastX = lastX + dunesSpacer;
         population.push_back(nextFox);
     } else {
         nextFox.setPos(nextFox.getRadius() + 1, lastY + dunesSpacer);
-        nextFox.genCriticalPointsFromPos();
         if (!nextFox.stillOnIsland(0, 0)) {
             throw("Foxes won't fit.");
         }
@@ -60,10 +69,9 @@ void FoxPopulation::genFoxesRugged(int numRugged, Map &map) {
     firstFox.setMap(&map);
     firstFox.genRadiusRugged();
     firstFox.setHabitat(Fox::kHabitats::mdsRugged);
-    int lastY = map.getySize()*0.3 + 100; //FIX
+    int lastY = map.getySize()*0.3 + 300;
     int lastX = (int)firstFox.getRadius() + 1;
     firstFox.setPos(lastX, lastY);
-    firstFox.genCriticalPointsFromPos();
     population.push_back(firstFox);
     previousFox = firstFox;
     for (int i = 0; i < numRugged - 1; i++) {
@@ -73,15 +81,13 @@ void FoxPopulation::genFoxesRugged(int numRugged, Map &map) {
         nextFox.setHabitat(Fox::kHabitats::mdsRugged);
         if (previousFox.stillOnIsland(ruggedSpacer, 0)) {
             nextFox.setPos(lastX + ruggedSpacer, lastY);
-            nextFox.genCriticalPointsFromPos();
             lastX = lastX + ruggedSpacer;
             population.push_back(nextFox);
         }
         else {
             nextFox.setPos(nextFox.getRadius() + 1, lastY + ruggedSpacer);
-            nextFox.genCriticalPointsFromPos();
             if (!nextFox.stillOnIsland(0, 0)) {
-                throw("Foxes won't fit.");
+                throw("Foxes won't fit dunes.");
             }
             lastX = nextFox.getRadius();
             lastY = lastY + ruggedSpacer;
@@ -93,16 +99,15 @@ void FoxPopulation::genFoxesRugged(int numRugged, Map &map) {
 
 
 //Places all foxes in evenly-spaced starting positions that are in the Dunes habitat
-void FoxPopulation::genFoxesGentle(int numDunes, Map &map) {
+void FoxPopulation::genFoxesGentle(int numGentle, Map &map) {
     Fox firstFox;
     Fox previousFox;
     firstFox.setMap(&map);
     firstFox.genRadiusGentle();
     firstFox.setHabitat(Fox::kHabitats::mdsGentle);
-    int lastY = map.getySize()*0.6+ 100; //FIX
+    int lastY = map.getySize()*0.6+ 200;
     int lastX = (int)firstFox.getRadius() + 1;
     firstFox.setPos(lastX, lastY);
-    firstFox.genCriticalPointsFromPos();
     population.push_back(firstFox);
     previousFox = firstFox;
     for (int i = 0; i < numGentle - 1; i++) {
@@ -112,15 +117,13 @@ void FoxPopulation::genFoxesGentle(int numDunes, Map &map) {
         nextFox.setHabitat(Fox::kHabitats::mdsGentle);
         if (previousFox.stillOnIsland(gentleSpacer, 0)) {
             nextFox.setPos(lastX + gentleSpacer, lastY);
-            nextFox.genCriticalPointsFromPos();
             lastX = lastX + gentleSpacer;
             population.push_back(nextFox);
         }
         else {
             nextFox.setPos(nextFox.getRadius() + 1, lastY + gentleSpacer);
-            nextFox.genCriticalPointsFromPos();
             if (!nextFox.stillOnIsland(0, 0)) {
-                throw("Foxes won't fit.");
+                throw("Foxes won't fit gentle.");
             }
             lastX = nextFox.getRadius();
             lastY = lastY + gentleSpacer;
@@ -138,10 +141,9 @@ void FoxPopulation::genFoxesGrass(int numGrass, Map &map) {
     firstFox.setMap(&map);
     firstFox.genRadiusGrass();
     firstFox.setHabitat(Fox::kHabitats::grass);
-    int lastY = 100;
+    int lastY = firstFox.getRadius() + 1;
     int lastX = (int)firstFox.getRadius() + 1;
     firstFox.setPos(lastX, lastY);
-    firstFox.genCriticalPointsFromPos();
     population.push_back(firstFox);
     previousFox = firstFox;
     for (int i = 0; i < numGrass - 1; i++) {
@@ -151,15 +153,13 @@ void FoxPopulation::genFoxesGrass(int numGrass, Map &map) {
         nextFox.setHabitat(Fox::kHabitats::grass);
         if (previousFox.stillOnIsland(grassSpacer, 0)) {
             nextFox.setPos(lastX + grassSpacer, lastY);
-            nextFox.genCriticalPointsFromPos();
             lastX = lastX + grassSpacer;
             population.push_back(nextFox);
         }
         else {
             nextFox.setPos(nextFox.getRadius() + 1, lastY + grassSpacer);
-            nextFox.genCriticalPointsFromPos();
             if (!nextFox.stillOnIsland(0, 0)) {
-                throw("Foxes won't fit.");
+                throw("Foxes won't fit grass.");
             }
             lastX = nextFox.getRadius();
             lastY = lastY + grassSpacer;
@@ -169,7 +169,16 @@ void FoxPopulation::genFoxesGrass(int numGrass, Map &map) {
     }
 }
 
+void FoxPopulation::takeTenSteps() {
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < popSizeGenerated; j++) {
+            population[j].randomWalkStep();
+        }
+    }
+}
+
 //NEED TO TEST THIS -- something's weird here. I suspect it's because overlap wrong isn't associative, so by calculating in a different order, we end up with larger overlap values.
+/*
 void FoxPopulation::makeNeighbors(std::vector<OrigFox>* pop, bool wrongFormula) {
     int size = (*pop).size();
     double overlap;
@@ -186,6 +195,22 @@ void FoxPopulation::makeNeighbors(std::vector<OrigFox>* pop, bool wrongFormula) 
             }
         }
     }
+}*/
+
+void FoxPopulation::makeNeighbors() {
+    std::vector<std::vector<Cell>>* islandCells = islandMap->getCells();
+    for (int i = 0; i < islandCells->size(); i++) {
+        for (int j = 0; j < islandCells->at(i).size(); j++) {
+            islandCells->at(i).at(j).checkCellNeighbors();
+        }
+    }
+}
+
+void FoxPopulation::resetNeighbors() {
+    for (int i = 0; i < popSizeGenerated; i++) {
+        int a = 0;
+        population[i].clearNeighbors();
+    }
 }
 
 //Since same pop can be used for multiple sims, resets pop to starting state
@@ -201,6 +226,7 @@ void FoxPopulation::reset(){
     removeds.clear();
     removeds.shrink_to_fit();
     setUpSusceptibles();
+    resetNeighbors();
 }
 
 //Changes a fox's compartment, and then moves it from one vector to another

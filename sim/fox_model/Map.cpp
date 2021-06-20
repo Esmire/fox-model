@@ -25,8 +25,6 @@ void Map::makeCells() {
 
 //Given a position on the map, returns the cell that position is in
 Cell* Map::getCellAtPoint(Pos A) {
-    int wtf = A.yPos;
-    int why = cellSize;
     int rowIndex = A.yPos / cellSize;
     if (rowIndex >= getNumCellRows()) { //Added since only the center of the circle has to stay on the island, apparently.
         rowIndex = getNumCellRows() - 1;
@@ -35,7 +33,28 @@ Cell* Map::getCellAtPoint(Pos A) {
     if (colIndex >= getNumCellCols()) {
         colIndex = getNumCellCols() - 1;
     }
-    return &(*getCells())[rowIndex][colIndex];
+    return &cells[rowIndex][colIndex];
+}
+
+
+std::vector<Cell*> Map::getCellsInBox(int xMax, int xMin, int yMax, int yMin) {
+    std::vector<Cell*> cellsInBox;
+    if (xMax >= 5000 || yMax >= 30000 || xMin < 0 || yMin < 0) {
+        int aha = 0;
+    }
+    int minRowIndex = yMin / cellSize;
+    int maxRowIndex = yMax / cellSize;
+    int minColIndex = xMin / cellSize;
+    int maxColIndex = xMax / cellSize;
+    for (int i = minRowIndex; i <= maxRowIndex; i++) {
+        for (int j = minColIndex; j <= maxColIndex; j++) {
+            cellsInBox.push_back(&cells[i][j]);
+        }
+    }
+    if (cellsInBox.size() == 0) {
+        int a = 0;
+    }
+    return cellsInBox;
 }
 
 }

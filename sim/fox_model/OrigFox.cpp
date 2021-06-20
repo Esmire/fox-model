@@ -45,7 +45,7 @@ bool OrigFox::placeFoxOnMap(int n, std::vector<OrigFox>* pop, int xSize, int ySi
 
 //Checks overlap between the fox that this is called on and the fox passed as a parameter.
 double OrigFox::findOverlap(OrigFox f1, bool wrongFormula) {
-    double d /*hah I wish*/ = getDistance(f1);
+    double d /*hah, I wish*/ = getDistance(f1);
     double r = getRadius();
     double R = f1.getRadius();
     if (wrongFormula) {

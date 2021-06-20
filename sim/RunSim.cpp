@@ -24,42 +24,7 @@ int randomlyPick(int a, int b) {
 
 /*Not totally sure why it introduces to a only the highest or lowerst y value fox instead of to a random fox in a high or low density habitat...
 Also, I'm aware this method is a little janky. This is actually my first C++ multi-file program, and when I started, I didn't know the standard
-library at all. I need to go back and change how getPos works, but I'll also need to modify everything that calls it.
-
-NOTE TO SELF:
-When generating the fox population, you're comparing all their positions anyway. Why not sort them then?*/
-void setSeedFox(bool highDensity, int N, FoxPopulation &pop, SimulationData &sim){
-    std::vector<Fox>* foxPop = pop.getAll();
-    int minPos = foxPop->at(0).getPos().yPos;
-    int maxPos = minPos;
-    int yVal;
-    int minIndex = 0; 
-    int maxIndex = 0; //Referring to indices in the array that the min and max pos foxes have
-    for (int i = 1; i < N; i++) {
-        yVal = foxPop->at(i).getPos().yPos;
-        if (yVal > maxPos) {
-            maxPos = yVal;
-            maxIndex = i;
-        }else if(yVal == maxPos) {
-            maxIndex = randomlyPick(i, minIndex); /*This is going to make same y foxes at the end more likely. I'll fix it later, but ok for a rough draft since
-                                                  island height > island width > numFoxes & overlap is constrained*/
-        }else if (yVal < minPos) {
-            minPos = yVal;
-                minIndex = i;
-        }else if (yVal == minPos) {
-            minIndex = randomlyPick(i, minIndex);
-        }
-    }
-    if (highDensity) {
-        (*foxPop)[maxIndex].setNextDiseaseState(Fox::kDiseaseState::latent);
-        pop.changeFoxCompartment(maxIndex);
-        sim.storeSeedFox((*foxPop)[maxIndex]);
-    } else {
-        (*foxPop)[minIndex].setNextDiseaseState(Fox::kDiseaseState::latent);
-        pop.changeFoxCompartment(minIndex);
-        sim.storeSeedFox((*foxPop)[minIndex]);
-    }
-}
+library at all. I need to go back and change how getPos works, but I'll also need to modify everything that calls it.*/
 
 //Roll to see if the infecteds infect others
 void infect(std::vector<Fox*>* infPtr, int i) {
@@ -136,6 +101,8 @@ void runSimGroup(int N, int latentPeriod, int infectiousPeriod, FoxPopulation &p
         //state.printStuff();
         std::cout << "end of sim " << i + simNum << " ";
         p.reset();
+        p.takeTenSteps();
+        p.makeNeighbors();
     }
 }
 
@@ -173,36 +140,32 @@ void writeToCSV(std::vector<SimulationData>* data) {
 
 
 int main() {
-    tryStuff();
+    //tryStuff();
  //SET THE FOLLOWING
-    /*
-    int N = 2000;
+    
+    int N = 1035;
     int numSims = 10;
     int numTimeSteps = 365;
     int resampleFreq = 10; //Don't set this equal to 0 or higher than your sim number. If you don't want resamples, set it equal to sim number.
     int islandWidth = 5000;
     int islandHeight = 30000; //i think the units are meters but honestly i dont know anymore i forgot
-    bool origMethods = true;
+    Map map(5000, 30000, 500);
     int latentPeriod = 5;
     int infectiousPeriod = 21;
     try {
-        std::vector<SimulationData> simData;
-        std::vector<SimulationData>* results = &simData;
-        int origN = N;
+        std::vector<SimulationData> simData; //Contains data for all the simulations
+        std::vector<SimulationData>* results = &simData; //Pointer to simData
         int simGroupSize = resampleFreq;
         for (int i = 0; i < (numSims / resampleFreq); i++) { //divide by 0 issue so fix that
             if (i == numSims / resampleFreq && numSims % resampleFreq != 0) {
                 simGroupSize = numSims % resampleFreq;
                 std::cout << simGroupSize;
             }
-            N = origN;
-            FoxPopulation pop(N, islandWidth, islandHeight, origMethods);
+            FoxPopulation pop(N, islandWidth, islandHeight, map);
             std::cout << "sum is " << getTransmissionTotal(pop);
             writeSumCSV(pop);
             N = pop.getPopSizeGenerated();
             std::cout << "generation complete" << "\n";
-            //SimulationData init(i, N, numTimeSteps); //fix this the i thing is wrong
-            //init.updatePopSummary((*popdata));
             runSimGroup(N, latentPeriod, infectiousPeriod, pop, results, numTimeSteps, simGroupSize, i * resampleFreq, islandHeight);
         }
         std::cout << "size is " << simData.size();
@@ -210,7 +173,7 @@ int main() {
     }
     catch (const char* msg) {
         std::cout << msg << '\n';
-    } */
+    } 
     /*These are commented out because they're broken in the actual code. (Except on days equal to them, which
     I doubt happens enough to change the result in any meaningful way. If there are issues though, I'll add it.)
 

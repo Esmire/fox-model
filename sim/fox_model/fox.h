@@ -18,9 +18,10 @@ public:
     void genRadiusGentle();
     void genRadiusRugged();
     void genRadiusDunes();
-    void genCriticalPointsFromPos();
     double getDistance(Fox f1);
     void addNeighbor(NeighborInfo &neighbor) { overlappingNeighbors.push_back(&neighbor); }
+    void removeNeighbor(NeighborInfo* neighbor);
+    void addFoxNeighbor(Fox* f, double minta, double overlap);
     void clearNeighbors();
     void informNeighborFoxes();
     void updateState() { diseaseState = nextDiseaseState; }
@@ -33,6 +34,8 @@ public:
     double findOverlap(Fox &f);
     bool stillInHabitat(int deltY);
     bool stillOnIsland(int deltX, int deltY);
+    void uncheckFoxes(int finalIndex);
+    bool isNeighbor(Fox* f);
 
     //Enumerators for various states
     enum kDiseaseState { susceptible, latent, infectious, recovered, dead };
@@ -70,6 +73,7 @@ private:
     int num;
     std::vector<Cell*> currentCells;
     Map* m;
+    bool hasBeenChecked = false;
 };
 
 #endif

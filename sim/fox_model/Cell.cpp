@@ -12,7 +12,6 @@ Cell::Cell(int xIndex, int yIndex, int size) {
 //Adds a fox to the cell
 void Cell::addFox(Fox* f) {
     foxesInCell.push_back(f);
-    //f->getCurrentCells()->push_back(this);
 }
 
 //Removes fox from cell
@@ -39,6 +38,21 @@ void Cell::tellFox(Fox *f) {
             foundCell = true;
         }
         i++;
+    }
+}
+
+//If any of the foxes in this cell overlap but aren't yet neighbors, creates neighbor info objects and makes them neighbors.
+void Cell::checkCellNeighbors() {
+    for (int i = 0; i < foxesInCell.size(); i++) {
+        for (int j = i + 1; j < foxesInCell.size(); j++) {
+            Fox* f1 = foxesInCell[i];
+            Fox* f2 = foxesInCell[j];
+            double overlap = f1->findOverlap((*f2));
+            double minta = f1->findMinta((*f2));
+            if (!f1->isNeighbor(f2) && minta > 0 && f1 != f2) {
+                f1->addFoxNeighbor(f2, minta, overlap);
+            }
+        }
     }
 }
 }

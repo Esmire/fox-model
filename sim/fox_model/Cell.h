@@ -19,6 +19,7 @@ public:
     void removeFoxCell(Fox* f);
     void tellFox(Fox* f);
     std::vector<Fox*>* getFoxesInCell() { return &foxesInCell; }
+    void checkCellNeighbors();
     Cell(int xIndex, int yIndex, int size);
 
     //Getters
