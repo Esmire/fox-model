@@ -142,7 +142,10 @@ void writeToCSV(std::vector<SimulationData>* data) {
 int main() {
     //tryStuff();
  //SET THE FOLLOWING
-    
+ 
+
+/*ACTUALLY DON'T SET THE FOLLOWING. Functionality for presets currently broken. Will be adding again soon.
+Was speed-coding, so currently only runs with the preset population size that's based on density from the Sanchez paper.*/
     int N = 1035;
     int numSims = 10;
     int numTimeSteps = 365;
