@@ -22,10 +22,6 @@ int randomlyPick(int a, int b) {
     return b;
 }
 
-/*Not totally sure why it introduces to a only the highest or lowerst y value fox instead of to a random fox in a high or low density habitat...
-Also, I'm aware this method is a little janky. This is actually my first C++ multi-file program, and when I started, I didn't know the standard
-library at all. I need to go back and change how getPos works, but I'll also need to modify everything that calls it.*/
-
 //Roll to see if the infecteds infect others
 void infect(std::vector<Fox*>* infPtr, int i) {
     //std::cout << "fox " << i << " has " << (*infPtr)[i]->getOverlappingNeighbors()->size() << " neighbors \n";
