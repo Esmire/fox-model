@@ -28,6 +28,8 @@ std::normal_distribution<double> distributionG(713.65, 1.59); //Grass radius
 std::normal_distribution<double> distributionR(282.09, 1.56); //Rugged radius
 std::normal_distribution<double> distributionGe(504.63, 2.02); //Gentle radius
 std::normal_distribution<double> distributionD(252.31, 2.28); //Dune radius
+
+//Functions that use the distributions to generate radii for a fox
 void Fox::genRadiusDunes() { rangeRadius = distributionD(generator4); }
 void Fox::genRadiusRugged() { rangeRadius = distributionR(generator4); }
 void Fox::genRadiusGentle() { rangeRadius = distributionGe(generator4); }
@@ -49,7 +51,7 @@ double Fox::getDistance(Fox f1) {
     }
 }
 
-//Habitat setter. Sets the habitat based on passed habitat character.
+//Habitat setter. Sets the habitat based on passed habitat type
 void Fox::setHabitat(kHabitats habitat) {
     switch (habitat) {
     case grass:
@@ -97,14 +99,14 @@ bool Fox::isNeighbor(Fox* f) {
     return false;
 }
 
-//Given a fox, a geometric mean, and an overlap area value, creates a neighbor info object and makes called fox and passed foxes neighbors
+//Given a fox, a geometric mean, and an overlap area value, creates a neighbor info object and makes called fox and passed fox neighbors
 void Fox::addFoxNeighbor(Fox* f, double minta, double overlap) {
     NeighborInfo* n = new NeighborInfo((*this), (*f), overlap, minta);
     overlappingNeighbors.push_back(n);
     f->addNeighbor((*n));
 }
 
-//Removes the passed NeighborInfo object from the fox that isn't this. Allows neighbor object deletion without dangling pointers.
+//Removes the passed NeighborInfo object from the fox that isn't this one. Allows for neighbor object deletion without dangling pointers.
 void Fox::removeNeighbor(NeighborInfo* neighbor) {
     std::vector<NeighborInfo*>* neighborVec = neighbor->getOtherFox((*this))->getOverlappingNeighbors();
     for (int i = 0; i < neighborVec->size(); i++) {
@@ -173,7 +175,7 @@ bool Fox::checkOverlapsValid() {
     return true;
 }
 
-//Given an index of the cells array, sets all foxes in cells the current fox is in to unchecked
+//Given an index of the cells array, sets all foxes in cells the current fox is in to unchecked up to but not including that index
 void Fox::uncheckFoxes(int finalIndex) {
     std::vector<Cell*> cells = getCellsFromPos();
     for (int i = 0; i < finalIndex; i++) {
@@ -187,7 +189,7 @@ void Fox::uncheckFoxes(int finalIndex) {
 std::default_random_engine generator3;
 std::uniform_real_distribution<double> stepGen(-501, 501);
 
-//Makes fox move up to 50 meters in each direction. If move doesn't work, attempts the same move but in the opposite direction.
+//Makes fox move up to 501 meters in each direction. If move doesn't work, attempts the same move but in the opposite direction.
 void Fox::randomWalkStep() {
     int stepX = stepGen(generator3);
     int stepY = stepGen(generator3);
@@ -207,7 +209,7 @@ void Fox::randomWalkStep() {
     }
 }
 
-//Changes fox location, but check to make sure fox stays within habitat type.
+//Changes fox location, but check to make sure fox stays within habitat type and on island.
 void Fox::move(int deltX, int deltY) {
     if (stillInHabitat(deltY) == false || stillOnIsland(deltX, deltY) == false) {
         deltX = 0;

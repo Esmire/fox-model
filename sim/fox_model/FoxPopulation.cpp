@@ -62,7 +62,7 @@ for (int i = 0; i < numDunes - 1; i++) {
 }
 
 
-//Places all foxes in evenly-spaced starting positions that are in the Dunes habitat
+//Places all foxes in evenly-spaced starting positions that are in the Rugged habitat
 void FoxPopulation::genFoxesRugged(int numRugged, Map &map) {
     Fox firstFox;
     Fox previousFox;
@@ -98,7 +98,7 @@ void FoxPopulation::genFoxesRugged(int numRugged, Map &map) {
 }
 
 
-//Places all foxes in evenly-spaced starting positions that are in the Dunes habitat
+//Places all foxes in evenly-spaced starting positions that are in the Gentle habitat
 void FoxPopulation::genFoxesGentle(int numGentle, Map &map) {
     Fox firstFox;
     Fox previousFox;
@@ -134,7 +134,7 @@ void FoxPopulation::genFoxesGentle(int numGentle, Map &map) {
 }
 
 
-//Places all foxes in evenly-spaced starting positions that are in the Dunes habitat
+//Places all foxes in evenly-spaced starting positions that are in the Grass habitat
 void FoxPopulation::genFoxesGrass(int numGrass, Map &map) {
     Fox firstFox;
     Fox previousFox;
@@ -169,6 +169,7 @@ void FoxPopulation::genFoxesGrass(int numGrass, Map &map) {
     }
 }
 
+//Do ten random walk steps per fox. Used between sims.
 void FoxPopulation::takeTenSteps() {
     for (int i = 0; i < 10; i++) {
         for (int j = 0; j < popSizeGenerated; j++) {
@@ -197,6 +198,7 @@ void FoxPopulation::makeNeighbors(std::vector<OrigFox>* pop, bool wrongFormula) 
     }
 }*/
 
+//Makes neighbor foxes for the fox population to be used during transmission step. Runs before each sim.
 void FoxPopulation::makeNeighbors() {
     std::vector<std::vector<Cell>>* islandCells = islandMap->getCells();
     for (int i = 0; i < islandCells->size(); i++) {
@@ -206,6 +208,7 @@ void FoxPopulation::makeNeighbors() {
     }
 }
 
+//Gets rid of all the NeighborInfo objects so that foxes can be moved and a new sim can begin
 void FoxPopulation::resetNeighbors() {
     for (int i = 0; i < popSizeGenerated; i++) {
         int a = 0;

@@ -25,7 +25,6 @@ void Cell::removeFoxCell(Fox* f) {
         }
         i++;
     }
-    //tellFox(f);
 }
 
 //Notifies fox it has been removed from this cell
