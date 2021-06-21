@@ -27,7 +27,7 @@ void Cell::removeFoxCell(Fox* f) {
     }
 }
 
-//Notifies fox it has been removed from this cell
+//Notifies fox it has been removed from this cell. NOTE: REMOVE THIS. I literally never call it. Instead we just change the value for currentCells entirely.
 void Cell::tellFox(Fox *f) {
     bool foundCell = false;
     int i = 0;

@@ -36,7 +36,7 @@ Cell* Map::getCellAtPoint(Pos A) {
     return &cells[rowIndex][colIndex];
 }
 
-
+//Given the coords for the sides of a box on the map, finds all the cells that overlap with the passed square
 std::vector<Cell*> Map::getCellsInBox(int xMax, int xMin, int yMax, int yMin) {
     std::vector<Cell*> cellsInBox;
     if (xMax >= 5000 || yMax >= 30000 || xMin < 0 || yMin < 0) {
@@ -52,7 +52,7 @@ std::vector<Cell*> Map::getCellsInBox(int xMax, int xMin, int yMax, int yMin) {
         }
     }
     if (cellsInBox.size() == 0) {
-        int a = 0;
+        throw("There are no cells in this box. Send help.");
     }
     return cellsInBox;
 }
