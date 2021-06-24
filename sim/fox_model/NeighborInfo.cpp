@@ -12,7 +12,7 @@ NeighborInfo::NeighborInfo(Fox &fox1, Fox &fox2, double overlap, double mintaMea
     f2 = &fox2;
     overlapArea = overlap;
     geoMean = mintaMean;
-    transmissionChance = transmissionProbability();
+    doseCoefficient = findDoseCoefficient();
 }
 
 
@@ -31,6 +31,18 @@ Fox* NeighborInfo::getOtherFox(Fox &f) {
     throw("something really weird is going on with getOtherFox in NeighborInfo");
 }
 
+/*Gets a number that should be directly preportional to the daily lepto dose a fox gets due to one infectious neighbor. Note that the eq works no matter which
+fox is infectious. Could have been shorter function, but wanted to make reasoning explicit.*/
+double NeighborInfo::findDoseCoefficient() {
+    double infectorArea = f1->getRadius() * f1->getRadius() * 3.14159; //Area of fox 1 home range
+    double susArea = f2->getRadius() * f2->getRadius() * 3.14159; //Area of fox 2 home range
+    double leptoConcentration = 1.0 / infectorArea; //Preportion of lepto shed in a day that's on one meter of the infectious fox's homerange
+    double exposureTime = overlapArea / susArea; //Amount of time (as fraction of a day) that susceptible fox spends in infectious fox's territory
+    double dosePerDay = exposureTime * leptoConcentration; //Assumption here is that lepto dose per unit time is preportional to concentration
+    return dosePerDay;
+}
+
+/*
 //Calculates the probability of transmission between two foxes given the geometric mean overlap value from OrigFox...
 double NeighborInfo::transmissionProbability() {
     double dailyContactTime = calcContactTime();
@@ -65,6 +77,6 @@ double NeighborInfo::calcContactTime() {
         returnVal = 0;
     }
     return returnVal;
-}
+}*/
 
 }

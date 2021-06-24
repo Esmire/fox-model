@@ -11,16 +11,17 @@ public:
     double getOverlapArea() { return overlapArea; }
     void setGeoMean(double mean) { geoMean = mean; }
     double getGeoMean() { return geoMean; }
-    double getTransmissionChance() { return transmissionChance; }
+    double getdoseCoefficient() { return doseCoefficient; }
 
     Fox* getOtherFox(Fox &f);
     NeighborInfo(Fox &fox1, Fox &fox2, double overlap, double mintaMean);
     double calcContactTime();
-    double transmissionProbability();
+    double findDoseCoefficient();
+
 private:
     double overlapArea;
     double geoMean;
-    double transmissionChance;
+    double doseCoefficient;
     Fox* f1;
     Fox* f2;
 };

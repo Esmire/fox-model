@@ -18,7 +18,7 @@ FoxPopulation::FoxPopulation(int N, int islandWidth, int islandHeight, Map &map)
         population[i].updateCurrentCells();
         population[i].setNum(i);
     }
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < 100; i++) {
         for (int j = 0; j < N; j++) {
             population[j].randomWalkStep();
         }

@@ -24,7 +24,7 @@ std::ofstream heck;
 double getInfectiousSum(Fox &f) {
     double sum = 0;
     for (int i = 0; i < f.getOverlappingNeighbors()->size(); i++) {
-        double h = f.getOverlappingNeighbors()->at(i)->getTransmissionChance();
+        double h = f.getOverlappingNeighbors()->at(i)->getdoseCoefficient();
         sum += h;
     }
     return sum;

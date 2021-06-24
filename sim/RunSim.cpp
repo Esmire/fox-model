@@ -13,24 +13,15 @@
 std::default_random_engine generator2;
 std::uniform_real_distribution<double> zeroToOne(0.0, 1.0);
 
-
-
-//Sometimes we need to pick one of two random things -- noting that this is a crap PRNG and I'll update the ones I use later
-int randomlyPick(int a, int b) {
-    int roll = rand() % 2;
-    if (roll == 1) { return a; }
-    return b;
-}
-
 //Roll to see if the infecteds infect others
 void infect(std::vector<Fox*>* infPtr, int i) {
-    //std::cout << "fox " << i << " has " << (*infPtr)[i]->getOverlappingNeighbors()->size() << " neighbors \n";
     for (int j = 0; j < (*infPtr)[i]->getOverlappingNeighbors()->size(); j++) {
-        NeighborInfo* neighbor = (*(*infPtr)[i]->getOverlappingNeighbors())[j]; //Yeah... This is still narsty.
-        //If the neighbor fox is susceptible and the random roll is less than the transmission chance, infect the neighbor
-        if (neighbor->getOtherFox((*(*infPtr)[i]))->getDiseaseState() == Fox::kDiseaseState::susceptible && neighbor->getTransmissionChance() >= zeroToOne(generator2)) {
-            neighbor->getOtherFox((*(*infPtr)[i]))->setNextDiseaseState(Fox::kDiseaseState::latent);
-            //To clarify that shit line: go get the other fox object the neighbor points to by passing it the current fox, and then change the neighbor's disease state
+        NeighborInfo* neighbor = infPtr->at(i)->getOverlappingNeighbors()->at(j); //Yeah... This is still narsty.
+        //If the neighbor fox is susceptible, increase it's chance of getting it at the end of the round
+        if (neighbor->getOtherFox((*infPtr->at(i)))->getDiseaseState() == Fox::kDiseaseState::susceptible) {
+            double lepto = neighbor->getdoseCoefficient();
+            neighbor->getOtherFox((*infPtr->at(i)))->addToInfectionSum(lepto);
+            //To clarify that shit line: go get the other fox object the neighbor points to by passing it the current fox, and then add to lepto sum
         }
     }
 }
@@ -48,50 +39,52 @@ bool backgroundTransmission(FoxPopulation &p) {
 //Goes through and does a timestep.
 //Note that the order here has been changed to improve speed. However, this will keep us from exacly replicating results, which I didn't realize was possible
 //before today when I found out it's possible to get R's PRNG in C++ because they actually use a pretty nice one.
-void doTimeStep(FoxPopulation &p, int infectiousPeriod, int latentPeriod, SimulationData &sim, int time) {
-    //Go through susceptibles and roll bg transmission
-    for (int i = 0; i < (*p.getSusceptibles()).size(); i++) {
-        if (backgroundTransmission(p)) {
-            (*p.getSusceptibles())[i]->setNextDiseaseState(Fox::kDiseaseState::latent);
-        }
-    }
+void doTimeStep(FoxPopulation &p, int infectiousPeriod, int latentPeriod, SimulationData &sim, int time, double param) {
     //Go through latents and roll becoming infectious
-    for (int i = 0; i < (*p.getLatents()).size(); i++) {
+    /*for (int i = 0; i < (*p.getLatents()).size(); i++) {
         if ((1.0 / (double)latentPeriod) >= zeroToOne(generator2)) {
             (*p.getLatents())[i]->setNextDiseaseState(Fox::kDiseaseState::infectious);
         }
-    }
+    }*/
     //Go through infecteds and roll infecting susceptible neighbors and also roll dying
     std::vector<Fox*>* infPtr = p.getInfecteds(); //Added variable to make code slightly less gross
-    for (int i = 0; i < (*infPtr).size(); i++) {
+    for (int i = 0; i < infPtr->size(); i++) {
         if ((1.0 / (double)infectiousPeriod) >= zeroToOne(generator2)) {
             (*infPtr)[i]->setNextDiseaseState(Fox::kDiseaseState::dead);
         }
-        infect(infPtr, i);
+            infect(infPtr, i);
+    }
+    //Go through susceptibles and roll bg transmission and transmission from neighbors. Works because all infection sums determined before these are rolled.
+    for (int i = 0; i < (*p.getSusceptibles()).size(); i++) {
+        Fox* currSus = p.getSusceptibles()->at(i);
+        if (backgroundTransmission(p)) {
+            currSus->setNextDiseaseState(Fox::kDiseaseState::infectious);
+        }
+        if (currSus->getInfectionSum()*param >= zeroToOne(generator2)) {
+            currSus->setNextDiseaseState(Fox::kDiseaseState::infectious);
+        }
+        currSus->setInfectionSum(0.0);
     }
     //Save a disease data object
     DiseaseData data(time, (*p.getSusceptibles()).size(), (*p.getLatents()).size(), (*p.getInfecteds()).size(), (*p.getRecovereds()).size(), (*p.getDead()).size());
     sim.updateDiseaseSummary(data);
     //Change current states to future states
     for (int i = 0; i < (*p.getAll()).size(); i++) {
-        //(*p.getAll())[i].updateState();
         p.changeFoxCompartment(i);
     }
 }
 
 //Runs 1 sim group and adds the data for it to the results vector
-void runSimGroup(int N, int latentPeriod, int infectiousPeriod, FoxPopulation &p, std::vector<SimulationData>* result, int time, int groupSize, int simNum, int height) {
+void runSimGroup(int N, int latentPeriod, int infectiousPeriod, FoxPopulation &p, std::vector<SimulationData>* result, int time, int groupSize, int simNum, int height, double param) {
     PopulationData* popData = new PopulationData(p.getAll(), simNum, simNum + groupSize - 1); //I know it's weird, but I need this allocated
-    SeedFox seed;
-    seed.locatePotentialSeedFoxes(p, true, height);
     for (int i = 0; i < groupSize; i++) {
+        SeedFox seed;
+        seed.locatePotentialSeedFoxes(p, true, height);
         SimulationData state(simNum + i, N, time);
         state.updatePopSummary((*popData));
-        //setSeedFox(true, N, p, state);
-
         seed.sampleSeedFox(state, zeroToOne(generator2));
         for (int j = 0; j < time; j++) {
-            doTimeStep(p, infectiousPeriod, latentPeriod, state, j);
+            doTimeStep(p, infectiousPeriod, latentPeriod, state, j, param);
         }
         (*result).push_back(state);
         //state.printStuff();
@@ -150,7 +143,8 @@ Was speed-coding, so currently only runs with the preset population size that's 
     int islandHeight = 30000; //i think the units are meters but honestly i dont know anymore i forgot
     Map map(5000, 30000, 500);
     int latentPeriod = 5;
-    int infectiousPeriod = 21;
+    int infectiousPeriod = 200;
+    double transmissionScaler = 2000;
     try {
         std::vector<SimulationData> simData; //Contains data for all the simulations
         std::vector<SimulationData>* results = &simData; //Pointer to simData
@@ -165,7 +159,7 @@ Was speed-coding, so currently only runs with the preset population size that's 
             writeSumCSV(pop);
             N = pop.getPopSizeGenerated();
             std::cout << "generation complete" << "\n";
-            runSimGroup(N, latentPeriod, infectiousPeriod, pop, results, numTimeSteps, simGroupSize, i * resampleFreq, islandHeight);
+            runSimGroup(N, latentPeriod, infectiousPeriod, pop, results, numTimeSteps, simGroupSize, i * resampleFreq, islandHeight, transmissionScaler);
         }
         std::cout << "size is " << simData.size();
         writeToCSV(results);

@@ -36,6 +36,7 @@ public:
     bool stillOnIsland(int deltX, int deltY);
     void uncheckFoxes(int finalIndex);
     bool isNeighbor(Fox* f);
+    void addToInfectionSum(double add) { infectionSum += add; }
 
     //Enumerators for various states
     enum kDiseaseState { susceptible, latent, infectious, recovered, dead };
@@ -60,6 +61,8 @@ public:
     void setCurrentCells(std::vector<Cell*> &cells) { currentCells = cells; }
     std::vector<Cell*>* getCurrentCells() { return &currentCells; }
     void setMap(Map* map) {  m = map; }
+    void setInfectionSum(double sum) { infectionSum = sum; }
+    double getInfectionSum() { return infectionSum; }
 
 private:
     Pos position;
@@ -74,6 +77,7 @@ private:
     std::vector<Cell*> currentCells;
     Map* m;
     bool hasBeenChecked = false;
+    double infectionSum;
 };
 
 #endif
