@@ -4,13 +4,13 @@
 void SeedFox::locatePotentialSeedFoxes(FoxPopulation &pop, bool highDensity, int islandHeight) {
     std::vector<Fox>* foxPop = pop.getAll();
     int yVal, upperBound, lowerBound; //fox y coord, bounds search area
-    int extremeIndex = 0; //Will hold index in the population array for fox that has highest (high density) or lowest (low density) y coord
-    int extremePos = foxPop->at(0).getPos().yPos; //Position of that fox to be used for comparison
+    int extremeIndex = -1; //Will hold index in the population array for fox that has highest (high density) or lowest (low density) y coord
+    int extremePos = islandHeight * .5; //foxPop->at(0).getPos().yPos; //Position of that fox to be used for comparison
     if (highDensity) {
         upperBound = islandHeight + 1; //For consistant comparison operator usage since in original, it was >= for one bound and > for the other
         lowerBound = islandHeight - 300;
     } else {
-        upperBound = 300;
+        upperBound = 2000;
         lowerBound = -1;
     }
     for (int i = 1; i < pop.getPopSizeGenerated(); i++) {
@@ -35,3 +35,7 @@ void SeedFox::sampleSeedFox(SimulationData &sim, double random) {
     currentSeedFox->setNextDiseaseState(Fox::kDiseaseState::infectious);
 }
 
+void SeedFox::sampleSeedRandom(SimulationData &sim, double random, FoxPopulation &p) {
+    int indexPicked = random * p.getPopSizeGenerated();
+    p.getAll()->at(indexPicked).setNextDiseaseState(Fox::kDiseaseState::infectious);
+}

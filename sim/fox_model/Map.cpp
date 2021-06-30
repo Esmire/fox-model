@@ -23,6 +23,14 @@ void Map::makeCells() {
     }
 }
 
+void Map::cleanCells() {
+    for (int i = 0; i < cells.size(); i++) {
+        for (int j = 0; j < cells[i].size(); j++) {
+            cells[i][j].reset();
+        }
+    }
+}
+
 //Given a position on the map, returns the cell that position is in
 Cell* Map::getCellAtPoint(Pos A) {
     int rowIndex = A.yPos / cellSize;

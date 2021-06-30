@@ -21,6 +21,7 @@ public:
     std::vector<Fox*>* getFoxesInCell() { return &foxesInCell; }
     void checkCellNeighbors();
     Cell(int xIndex, int yIndex, int size);
+    void reset();
 
     //Getters
     Pos getCellTopRight() { return cellTopRight; }

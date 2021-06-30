@@ -63,6 +63,8 @@ public:
     void setMap(Map* map) {  m = map; }
     void setInfectionSum(double sum) { infectionSum = sum; }
     double getInfectionSum() { return infectionSum; }
+    bool getSintinel() { return isSentinel; }
+    void setSintinel(bool collared) { isSentinel = collared; }
 
 private:
     Pos position;
@@ -78,6 +80,7 @@ private:
     Map* m;
     bool hasBeenChecked = false;
     double infectionSum;
+    bool isSentinel;
 };
 
 #endif

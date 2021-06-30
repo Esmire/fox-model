@@ -147,6 +147,8 @@ void Fox::updateCurrentCells() {
         Fox* f1 = this;
         currentCells[i]->removeFoxCell(f1);
     }
+    currentCells.clear();
+    currentCells.shrink_to_fit();
     currentCells = getCellsFromPos();
     for (int i = 0; i < currentCells.size(); i++) {
         Fox* f1 = this;

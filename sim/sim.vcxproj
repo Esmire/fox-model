@@ -127,6 +127,7 @@
     <ClInclude Include="PopulationData.h" />
     <ClInclude Include="RunSim.h" />
     <ClInclude Include="SeedFox.h" />
+    <ClInclude Include="SentinelData.h" />
     <ClInclude Include="SimulationData.h" />
     <ClInclude Include="TestSim.h" />
   </ItemGroup>
@@ -140,6 +141,7 @@
     <ClCompile Include="PopulationData.cpp" />
     <ClCompile Include="RunSim.cpp" />
     <ClCompile Include="SeedFox.cpp" />
+    <ClCompile Include="SentinelData.cpp" />
     <ClCompile Include="SimulationData.cpp" />
     <ClCompile Include="TestSim.cpp" />
   </ItemGroup>

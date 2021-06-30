@@ -144,7 +144,7 @@ void tryStuff() {
 
         //TEST DUNES GENERATION
         Map newMap(5000, 30000, 500);
-        FoxPopulation p(1035, 5000, 30000, newMap);
+        FoxPopulation p(1035, 5000, 30000, newMap, 10);
         //p.genFoxesDunes(315, newMap);
         for (int i = 0; i < 315; i++) {
             p.getAll()->at(i).updateCurrentCells();

@@ -11,7 +11,7 @@ public:
    
     void reset();
     void changeFoxCompartment(int vectorPos);
-    FoxPopulation(int N, int width, int height, Map &map);
+    FoxPopulation(int N, int width, int height, Map &map, int numCollared);
     void setUpSusceptibles();
     void removeFox(std::vector<Fox*> &compartment, Fox* ptr);
     void makeNeighbors();
@@ -21,6 +21,13 @@ public:
     void genFoxesGrass(int numGrass, Map &map);
     void takeTenSteps();
     void resetNeighbors();
+    int collarSentinel();
+    int getAliveSentinels() { return aliveSentinels; }
+    void decrementSentinels() { aliveSentinels--; }
+    void birthPulse(int births);
+    void setBackSusFoxes(int numReplaced);
+    Map* getMap() { return islandMap; }
+    int getBirths();
 
     //get the vectors of pointers so that later functions don't have to sort through the population
     std::vector<Fox*>* getLatents() { return &latents; }
@@ -45,14 +52,15 @@ private:
     int ruggedDensity = 9;
     int gentleDensity = 5;
     int grassDensity = 2;
-    int dunesPop = 315;
-    int ruggedPop = 405;
-    int gentlePop = 225;
-    int grassPop = 90;
+    int dunesPop = 315/2 + 1;
+    int ruggedPop = 405/2 + 1;
+    int gentlePop = 225/2;
+    int grassPop = 90/2;
     int dunesSpacer = 200;
     int gentleSpacer = 400;
     int ruggedSpacer = 250;
     int grassSpacer = 600;
+    int aliveSentinels;
 };
 
 #endif

@@ -18,8 +18,8 @@ void SimulationData::updateDiseaseSummary(DiseaseData stateAtTimestep) {
 }
 
 //Stores copy of the seed fox
-void SimulationData::storeSeedFox(Fox f) {
-    seedFox = f;
+void SimulationData::storeSeedFox(Fox &f) {
+    seedFox = f.getNum();
 }
 
 //When the debugger fails...

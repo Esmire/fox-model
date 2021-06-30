@@ -19,6 +19,7 @@ public:
     void makeCells();
     Cell* getCellAtPoint(Pos A);
     std::vector<Cell*> getCellsInBox(int xMax, int xMin, int yMax, int yMin);
+    void cleanCells();
 
     //getters
     int getxSize() { return xSize; }

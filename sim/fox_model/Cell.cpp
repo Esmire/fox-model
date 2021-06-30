@@ -54,4 +54,8 @@ void Cell::checkCellNeighbors() {
         }
     }
 }
+
+void Cell::reset() {
+    foxesInCell.shrink_to_fit();
+}
 }

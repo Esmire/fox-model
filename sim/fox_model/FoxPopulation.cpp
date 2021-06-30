@@ -3,10 +3,13 @@
 #include "test.h"
 #include "NeighborInfo.h"
 #include "OrigFox.h"
+#include <random>
 #include <iostream>
+
+
 namespace foxlib {
 //Generates initial, fully susceptible fox population of foxes from passed parameters
-FoxPopulation::FoxPopulation(int N, int islandWidth, int islandHeight, Map &map) {
+FoxPopulation::FoxPopulation(int N, int islandWidth, int islandHeight, Map &map, int numCollared) {
     population.clear();
     islandMap = &map;
     genFoxesDunes(dunesPop, map);
@@ -211,8 +214,8 @@ void FoxPopulation::makeNeighbors() {
 //Gets rid of all the NeighborInfo objects so that foxes can be moved and a new sim can begin
 void FoxPopulation::resetNeighbors() {
     for (int i = 0; i < popSizeGenerated; i++) {
-        int a = 0;
         population[i].clearNeighbors();
+        population[i].setSintinel(false);
     }
 }
 
@@ -300,4 +303,53 @@ void FoxPopulation::setUpSusceptibles() {
         susceptibles.push_back(ptr);
     }
 }
+
+std::default_random_engine generator5{ static_cast<long unsigned int>(874902879287649582) };
+std::uniform_real_distribution<double> zeroToOne2(0.0, 1.0);
+//Adds sentinel animals until target sentinel is reached recursively. Returns index of new sentinel in population array.
+int FoxPopulation::collarSentinel() {
+    int index = popSizeGenerated * zeroToOne2(generator5);
+    if (index == popSizeGenerated) { //Distribution is inclusive of edge cases. Avoids out of bounds error.
+        index--;
+    }
+    if (population[index].getSintinel() == false && population[index].getDiseaseState() != Fox::kDiseaseState::dead) {
+        population[index].setSintinel(true);
+        aliveSentinels += 1;
+        return index;
+    }
+    else {
+        return collarSentinel();
+    }
+}
+
+//Simulates the introduction of new susceptibles by replacement. Only really accurate for short times in years. Deterministic.
+//Note that because I'm using double-int conversion, it always rounds down.
+void FoxPopulation::birthPulse(int birth){
+    if (removeds.size() <= birth) {
+        for (int i = 0; i < removeds.size(); i++) {
+            removeds[i]->setNextDiseaseState(Fox::kDiseaseState::susceptible);
+        }
+    } else {
+        setBackSusFoxes(birth);
+    }
+}
+
+int FoxPopulation::getBirths() {
+    int numAlive = recovereds.size() + susceptibles.size() + infecteds.size();
+    int birth = 0.39 * numAlive; //Assuming 25% growth rate but 10% dead since last annual measurement. 125/90 ~= 0.39.
+    return birth;
+}
+
+//Randomly sets numReplaced foxes that are currently dead to susceptible
+void FoxPopulation::setBackSusFoxes(int numReplaced) {
+    int numRecReplaced = recovereds.size() / susceptibles.size();
+    while (numReplaced > 0) {
+        int index = removeds.size() * zeroToOne2(generator5);
+        if (removeds[index]->getNextDiseaseState() == Fox::kDiseaseState::dead) {
+            removeds[index]->setNextDiseaseState(Fox::kDiseaseState::susceptible);
+            numReplaced--;
+        }
+    }
+}
+
 }
