@@ -1,5 +1,6 @@
 #CCFLAGS=-g -std=c++20 -I fox_model
 CCFLAGS=-O3 -std=c++20 -I fox_model
+CPP=g++
 
 SRC=DiseaseData.cpp \
 Monitor.cpp \
@@ -21,14 +22,9 @@ fox_model/fox.cpp
 
 DEPS=Makefile
 CPP=g++
-OBJS=$(patsubst %.c,obj/%.o,$(SRC))
 
 fox-sim: $(OBJS)
-	$(CPP) $(CCFLAGS) -o fox-sim $(OBJS)
+	$(CPP) $(CCFLAGS) -o fox-sim $(SRC)
 
-obj:
-	mkdir -p obj
-
-obj/%.o: %.c $(DEPS)
-	$(CC) $(CFLAGS) -c -o $@ $<
-	@$(CC) -MM $(CFLAGS) $< | sed 's|^.*:|$@:|' > $(patsubst %.o,%.d,$@)
+clean:
+	rm -f fox-sim
