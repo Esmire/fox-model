@@ -1,6 +1,6 @@
 #include "FoxPopulation.h"
 #include <algorithm>
-#include "test.h"
+#include "Test.h"
 #include "NeighborInfo.h"
 #include "OrigFox.h"
 #include <random>

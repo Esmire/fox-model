@@ -52,10 +52,10 @@ private:
     int ruggedDensity = 9;
     int gentleDensity = 5;
     int grassDensity = 2;
-    int dunesPop = 315/2 + 1;
-    int ruggedPop = 405/2 + 1;
-    int gentlePop = 225/2;
-    int grassPop = 90/2;
+    int dunesPop = 315;
+    int ruggedPop = 405;
+    int gentlePop = 225;
+    int grassPop = 90;
     int dunesSpacer = 200;
     int gentleSpacer = 400;
     int ruggedSpacer = 250;

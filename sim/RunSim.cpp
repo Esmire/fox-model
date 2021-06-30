@@ -239,7 +239,7 @@ int main() {
 
 /*ACTUALLY DON'T SET THE FOLLOWING. Functionality for presets currently broken. Will be adding again soon.
 Was speed-coding, so currently only runs with the preset population size that's based on density from the Sanchez paper.*/
-    int N = 1035/2;
+    int N = 1035;
     int numSims = 1001;
     int numTimeSteps = 365 * 2;
     int resampleFreq = 1001; //Don't set this equal to 0 or higher than your sim number. If you don't want resamples, set it equal to sim number.
